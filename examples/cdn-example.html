@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MSW Controller SDK - CDN Example</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        line-height: 1.6;
+      }
+      .container {
+        background: #f5f5f5;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+      }
+      button {
+        background: #007acc;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        margin: 5px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background: #005a9e;
+      }
+      .code {
+        background: #2d2d2d;
+        color: #f8f8f2;
+        padding: 15px;
+        border-radius: 4px;
+        overflow-x: auto;
+        font-family: "Courier New", monospace;
+      }
+      .status {
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 4px;
+        background: #e8f5e8;
+        border: 1px solid #4caf50;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>MSW Controller SDK - CDN 使用示例</h1>
+
+    <div class="container">
+      <h2>📦 CDN 加载方式</h2>
+      <div class="code">
+        &lt;!-- 通过 unpkg CDN 加载 --&gt; &lt;script
+        src="https://unpkg.com/@msw-controller/sdk@latest/dist/index.umd.js"&gt;&lt;/script&gt;
+        &lt;!-- 或者通过 jsDelivr CDN 加载 --&gt; &lt;script
+        src="https://cdn.jsdelivr.net/npm/@msw-controller/sdk@latest/dist/index.umd.js"&gt;&lt;/script&gt;
+      </div>
+    </div>
+
+    <div class="container">
+      <h2>🎮 控制器操作</h2>
+      <button onclick="initController()">初始化控制器</button>
+      <button onclick="showController()">显示控制器</button>
+      <button onclick="hideController()">隐藏控制器</button>
+      <button onclick="toggleController()">切换显示</button>
+      <button onclick="destroyController()">销毁控制器</button>
+      <div id="status" class="status">等待操作...</div>
+    </div>
+
+    <div class="container">
+      <h2>🧪 API 测试</h2>
+      <button onclick="makeRequest()">发送测试请求</button>
+      <div id="response"></div>
+    </div>
+
+    <div class="container">
+      <h2>📝 使用说明</h2>
+      <p>1. 点击 "初始化控制器" 创建 MSW Controller 实例</p>
+      <p>2. 使用控制按钮来显示/隐藏控制器</p>
+      <p>3. 点击 "发送测试请求" 来测试 API 拦截功能</p>
+      <p>4. 在实际项目中，请确保先初始化 MSW 服务</p>
+    </div>
+
+    <!-- 注意：这里使用本地构建的文件进行演示 -->
+    <!-- 在实际使用中，请使用上面提到的 CDN 链接 -->
+    <script src="../packages/sdk/dist/index.umd.js"></script>
+
+    <script>
+      let controller = null;
+
+      function updateStatus(message) {
+        document.getElementById("status").textContent = message;
+      }
+
+      function initController() {
+        try {
+          if (controller) {
+            controller.destroy();
+          }
+
+          // 初始化 MSW Controller
+          controller = window.MSWControllerSDK.initMSWController({
+            position: { x: 20, y: 20 },
+            darkMode: false,
+            draggable: true,
+          });
+
+          updateStatus("✅ 控制器已初始化");
+        } catch (error) {
+          updateStatus("❌ 初始化失败: " + error.message);
+        }
+      }
+
+      function showController() {
+        if (controller) {
+          controller.show();
+          updateStatus("👁️ 控制器已显示");
+        } else {
+          updateStatus("⚠️ 请先初始化控制器");
+        }
+      }
+
+      function hideController() {
+        if (controller) {
+          controller.hide();
+          updateStatus("🙈 控制器已隐藏");
+        } else {
+          updateStatus("⚠️ 请先初始化控制器");
+        }
+      }
+
+      function toggleController() {
+        if (controller) {
+          controller.toggle();
+          updateStatus("🔄 控制器状态已切换");
+        } else {
+          updateStatus("⚠️ 请先初始化控制器");
+        }
+      }
+
+      function destroyController() {
+        if (controller) {
+          controller.destroy();
+          controller = null;
+          updateStatus("🗑️ 控制器已销毁");
+        } else {
+          updateStatus("⚠️ 没有可销毁的控制器");
+        }
+      }
+
+      async function makeRequest() {
+        try {
+          const response = await fetch("/api/test", {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          const data = await response.text();
+          document.getElementById("response").innerHTML = `
+                    <div class="status">
+                        <strong>响应状态:</strong> ${response.status}<br>
+                        <strong>响应内容:</strong> ${data}
+                    </div>
+                `;
+        } catch (error) {
+          document.getElementById("response").innerHTML = `
+                    <div style="background: #ffe8e8; border-color: #f44336;" class="status">
+                        <strong>请求失败:</strong> ${error.message}
+                    </div>
+                `;
+        }
+      }
+
+      // 页面加载完成后自动初始化
+      window.addEventListener("load", function () {
+        updateStatus("📄 页面已加载，点击按钮开始使用");
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,60 @@
+{
+	"name": "msw-controller",
+	"version": "0.1.0",
+	"description": "A lightweight MSW controller for dynamic mock management",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"build": "pnpm -r build",
+		"dev": "pnpm -r dev",
+		"watch": "pnpm --filter=@msw-controller/core run dev & pnpm --filter=@msw-controller/sdk run dev",
+		"dev:examples": "pnpm --filter=examples run dev",
+		"test": "pnpm -r test",
+		"lint": "biome lint packages/*/src",
+		"lint:fix": "biome lint --write packages/*/src",
+		"format": "biome format packages/*/src",
+		"format:write": "biome format --write packages/*/src",
+		"check": "biome check packages/*/src",
+		"check:fix": "biome check --write packages/*/src",
+		"type-check": "pnpm -r type-check",
+		"clean": "pnpm -r clean",
+		"changeset": "changeset",
+		"version-packages": "changeset version",
+		"release": "pnpm build && changeset publish"
+	},
+	"keywords": [
+		"msw",
+		"mock",
+		"service-worker",
+		"frontend",
+		"development-tools",
+		"react",
+		"typescript"
+	],
+	"author": "LongChan",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/007sair/msw-controller.git"
+	},
+	"bugs": {
+		"url": "https://github.com/007sair/msw-controller/issues"
+	},
+	"homepage": "https://github.com/007sair/msw-controller#readme",
+	"devDependencies": {
+		"@biomejs/biome": "^2.1.3",
+		"@changesets/cli": "^2.27.1",
+		"typescript": "^5.3.3",
+		"vite": "^5.1.0",
+		"vitest": "^1.2.0"
+	},
+	"engines": {
+		"node": ">=16.0.0",
+		"pnpm": ">=8.0.0"
+	},
+	"packageManager": "pnpm@8.15.1",
+	"workspaces": [
+		"packages/*",
+		"examples/*"
+	]
+}

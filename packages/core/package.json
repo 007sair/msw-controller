@@ -1,0 +1,59 @@
+{
+  "name": "@msw-controller/core",
+  "version": "0.1.0",
+  "description": "Core interceptor and storage management for MSW Controller",
+  "type": "module",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite build --watch",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "lint": "biome lint src",
+    "lint:fix": "biome lint --write src",
+    "format": "biome format src",
+    "format:write": "biome format --write src",
+    "check": "biome check src",
+    "check:fix": "biome check --write src",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "keywords": [
+    "msw",
+    "mock",
+    "interceptor",
+    "service-worker"
+  ],
+  "author": "LongChan",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/007sair/msw-controller.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/007sair/msw-controller/issues"
+  },
+  "homepage": "https://github.com/007sair/msw-controller#readme",
+  "devDependencies": {
+    "@types/node": "^20.11.17",
+    "typescript": "^5.3.3",
+    "vite": "^5.1.0",
+    "vite-plugin-dts": "^3.7.3",
+    "vitest": "^1.2.0"
+  },
+  "peerDependencies": {
+    "msw": ">=2.0.0"
+  }
+}

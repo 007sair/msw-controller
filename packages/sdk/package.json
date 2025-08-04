@@ -1,0 +1,62 @@
+{
+	"name": "@msw-controller/sdk",
+	"version": "0.1.0",
+	"description": "Universal SDK for MSW Controller with floating button and control panel",
+	"type": "module",
+	"main": "dist/index.umd.js",
+	"module": "dist/index.es.js",
+	"types": "dist/index.d.ts",
+	"exports": {
+		".": {
+			"import": "./dist/index.es.js",
+			"require": "./dist/index.umd.js",
+			"types": "./dist/index.d.ts"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "vite build",
+		"dev": "vite build --watch",
+		"test": "vitest",
+		"test:ui": "vitest --ui",
+		"lint": "biome lint src",
+		"lint:fix": "biome lint --write src",
+		"format": "biome format src",
+		"format:write": "biome format --write src",
+		"check": "biome check src",
+		"check:fix": "biome check --write src",
+		"type-check": "tsc --noEmit",
+		"clean": "rm -rf dist"
+	},
+	"keywords": [
+		"msw",
+		"sdk",
+		"ui",
+		"mock",
+		"controller",
+		"javascript"
+	],
+	"author": "LongChan",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/007sair/msw-controller.git",
+		"directory": "packages/sdk"
+	},
+	"bugs": {
+		"url": "https://github.com/007sair/msw-controller/issues"
+	},
+	"homepage": "https://github.com/007sair/msw-controller#readme",
+	"dependencies": {
+		"@msw-controller/core": "workspace:*"
+	},
+	"devDependencies": {
+		"@types/react": "^18.2.55",
+		"typescript": "^5.3.3",
+		"vite": "^5.1.0",
+		"vite-plugin-dts": "^3.7.3",
+		"vitest": "^1.2.0"
+	}
+}
