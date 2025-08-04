@@ -1,6 +1,6 @@
 import { createControlPanel } from './components/ControlPanelJS'
 import { createFloatingButton } from './components/FloatingButtonJS'
-import { getController } from '@msw-controller/core'
+import { getController, type MSWController } from '@msw-controller/core'
 import type { MSWControllerConfig, Position } from './types'
 
 /**
@@ -8,7 +8,8 @@ import type { MSWControllerConfig, Position } from './types'
  * 提供浮动按钮和控制面板来管理 MSW 处理器
  */
 export class MSWControllerSDK {
-  private config: Required<MSWControllerConfig>
+  private config: Required<Omit<MSWControllerConfig, 'controller'>>
+  private controller: MSWController | undefined = undefined
   private isOpen: boolean = false
   private buttonElement: HTMLElement | null = null
   private panelElement: HTMLElement | null = null
@@ -23,7 +24,11 @@ export class MSWControllerSDK {
     // 从 localStorage 加载保存的主题偏好
     const savedTheme = MSWControllerSDK.loadThemePreferenceStatic()
 
+    // 设置 controller 实例
+    this.controller = config.controller
+
     // 合并用户配置和默认值
+    const { controller: _, ...configWithoutController } = config
     this.config = {
       initialPosition: { bottom: 50, right: 50 },
       buttonContent: 'MSW',
@@ -35,7 +40,7 @@ export class MSWControllerSDK {
       container: document.body,
       onToggle: () => {},
       onHandlerToggle: this.handleHandlerToggle.bind(this),
-      ...config,
+      ...configWithoutController,
     }
 
     // 如果用户提供了 onHandlerToggle，包装处理逻辑
@@ -107,6 +112,7 @@ export class MSWControllerSDK {
       onClose: () => this.close(),
       onHandlerToggle: this.config.onHandlerToggle,
       sdkInstance: this,
+      controller: this.controller,
     })
 
     if (this.panelElement) {
@@ -223,10 +229,11 @@ export class MSWControllerSDK {
    */
   private async handleHandlerToggle(handlerId: string, enabled: boolean): Promise<void> {
     try {
-      const controller = getController()
+      // 优先使用传入的 controller 实例，如果没有则使用全局 controller
+      const controller = this.controller || getController()
 
       if (controller) {
-        // Use the global controller to toggle handler state
+        // Use the controller to toggle handler state
         // This will automatically save to msw-controller-config
         controller.toggleHandler(handlerId, enabled)
       }
@@ -247,7 +254,8 @@ export class MSWControllerSDK {
    */
   public async loadHandlerStates(): Promise<Record<string, boolean>> {
     try {
-      const controller = getController()
+      // 优先使用传入的 controller 实例，如果没有则使用全局 controller
+      const controller = this.controller || getController()
 
       if (controller) {
         const handlers = controller.getHandlers()

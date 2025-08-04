@@ -1,4 +1,4 @@
-interface Window {
+declare interface Window {
   msw: {
     worker: ReturnType<typeof setupWorker>
   }

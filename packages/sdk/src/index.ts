@@ -12,5 +12,8 @@ export function initMSWController(config: MSWControllerConfig = {}): MSWControll
 
 export type { MSWControllerConfig, Position } from './types'
 export { MSWControllerSDK }
+export type { MSWController } from '@msw-controller/core'
+
+
 
 export default initMSWController

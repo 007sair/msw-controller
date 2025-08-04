@@ -1,6 +1,6 @@
 {
 	"name": "@msw-controller/sdk",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"description": "Universal SDK for MSW Controller with floating button and control panel",
 	"type": "module",
 	"main": "dist/index.umd.js",

@@ -2,6 +2,7 @@ export {
   createInterceptor,
   getController,
   getControllerInstance,
+  MSWController,
 } from './interceptor'
 
 export type {

@@ -1,3 +1,4 @@
+import type { MSWController } from '@msw-controller/core'
 import type { ReactNode } from 'react'
 
 // 存储接口定义
@@ -21,6 +22,7 @@ export interface Position {
  * MSW 控制器 SDK 配置选项
  */
 export interface MSWControllerConfig {
+  controller?: MSWController
   initialPosition?: Position
   buttonContent?: string | HTMLElement
   buttonClassName?: string
@@ -31,8 +33,6 @@ export interface MSWControllerConfig {
   onToggle?: (isOpen: boolean) => void
   onHandlerToggle?: (handlerId: string, enabled: boolean) => void
   container?: HTMLElement
-
-
 }
 
 export interface MSWControllerProps extends Omit<MSWControllerConfig, 'buttonContent'> {

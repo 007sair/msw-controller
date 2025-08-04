@@ -1,4 +1,4 @@
-import { getController } from '@msw-controller/core'
+import { getController, type MSWController } from '@msw-controller/core'
 import type { MSWControllerSDK } from '..'
 
 // MSW Handler 信息接口
@@ -26,6 +26,7 @@ export interface ControlPanelConfig {
   onClose: () => void
   onHandlerToggle: (handlerId: string, enabled: boolean) => void
   sdkInstance?: MSWControllerSDK
+  controller?: MSWController
 }
 
 interface RequestRecord {
@@ -53,7 +54,8 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
   let dragOffset = { x: 0, y: 0 }
   const getHandlerEnabledByHandlerId = (handlerId: string): boolean => {
     try {
-      const controller = getController()
+      // 优先使用传入的 controller 实例，如果没有则使用全局 controller
+      const controller = config.controller || getController()
       if (!controller) return false
       const handler = controller.getHandler(handlerId)
       return handler ? handler.enabled : false
@@ -224,7 +226,7 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
   const getTabTitle = (tabName: string, tabKey: string): string => {
     if (tabKey === 'config') {
       try {
-        const controller = getController()
+        const controller = config.controller || getController()
         if (controller) {
           const handlers = controller.getHandlers()
           const enabledCount = handlers.filter((handler) => handler.enabled).length
@@ -378,7 +380,7 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
 
   // Render requests tab
   const renderRequestsTab = () => {
-    const controller = getController()
+    const controller = config.controller || getController()
     requests = controller ? controller.getRequestRecords() : []
 
     if (requests.length === 0) {
@@ -440,7 +442,7 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
         requestItem.addEventListener('click', () => {
           const newEnabled = !isEnabled
 
-          const controller = getController()
+          const controller = config.controller || getController()
           if (controller) {
             controller.toggleHandler(handlerId, newEnabled)
           }
@@ -566,7 +568,7 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
 
   // Render config tab
   const renderConfigTab = () => {
-    const controller = getController()
+    const controller = config.controller || getController()
     const handlers = controller ? controller.getHandlers() : []
 
     if (handlers.length === 0) {
@@ -627,7 +629,7 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
       const newValue = newSelectAllCheckbox.checked
       filteredHandlers.forEach((handler) => {
         config.onHandlerToggle(handler.id, newValue)
-        const controller = getController()
+        const controller = config.controller || getController()
         if (controller) {
           controller.toggleHandler(handler.id, newValue)
         }
@@ -677,7 +679,7 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
       handlerItem.addEventListener('click', () => {
         const newEnabled = !enabled
         config.onHandlerToggle(handler.id, newEnabled)
-        const controller = getController()
+        const controller = config.controller || getController()
         if (controller) {
           controller.toggleHandler(handler.id, newEnabled)
         }
