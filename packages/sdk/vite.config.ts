@@ -16,12 +16,7 @@ export default defineConfig({
       fileName: (format) => `index.${format}.js`,
     },
     rollupOptions: {
-      external: ['@msw-controller/core'],
-      output: {
-        globals: {
-          '@msw-controller/core': 'MSWControllerCore'
-        }
-      }
+      // 完全移除外部依赖配置，让所有依赖都被打包进来
     },
     sourcemap: true,
     minify: true

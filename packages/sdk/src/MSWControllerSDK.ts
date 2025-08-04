@@ -1,5 +1,6 @@
 import { createControlPanel } from './components/ControlPanelJS'
 import { createFloatingButton } from './components/FloatingButtonJS'
+import { getController } from '@msw-controller/core'
 import type { MSWControllerConfig, Position } from './types'
 
 /**
@@ -222,8 +223,6 @@ export class MSWControllerSDK {
    */
   private async handleHandlerToggle(handlerId: string, enabled: boolean): Promise<void> {
     try {
-      // Import getController dynamically to avoid circular dependency
-      const { getController } = await import('@msw-controller/core')
       const controller = getController()
 
       if (controller) {
@@ -248,8 +247,6 @@ export class MSWControllerSDK {
    */
   public async loadHandlerStates(): Promise<Record<string, boolean>> {
     try {
-      // Import getController dynamically to avoid circular dependency
-      const { getController } = await import('@msw-controller/core')
       const controller = getController()
 
       if (controller) {

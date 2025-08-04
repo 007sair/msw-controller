@@ -1,4 +1,4 @@
-import { initMSWController, type MSWControllerSDK } from '@msw-controller/sdk'
+// import { initMSWController, type MSWControllerSDK } from '@msw-controller/sdk'
 import { useEffect, useState } from 'react'
 
 function App() {
@@ -7,11 +7,11 @@ function App() {
 
   // 初始化 MSW Controller SDK - 提供悬浮按钮和控制面板UI
   useEffect(() => {
-    let mswController: MSWControllerSDK | null = null
+    let mswController: any = null
 
     try {
       // 初始化 SDK，创建悬浮按钮和控制面板
-      mswController = initMSWController()
+      mswController = window.MSWControllerSDK.initMSWController()
       console.log('✅ MSW Controller SDK 初始化成功')
     } catch (error) {
       console.error('❌ MSW Controller SDK 初始化失败:', error)
