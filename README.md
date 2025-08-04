@@ -21,14 +21,7 @@
 ### 安装
 
 ```bash
-# 使用 npm
 npm install @msw-controller/core @msw-controller/sdk
-
-# 使用 yarn
-yarn add @msw-controller/core @msw-controller/sdk
-
-# 使用 pnpm
-pnpm add @msw-controller/core @msw-controller/sdk
 ```
 
 ### 基础用法
@@ -44,17 +37,27 @@ const worker = setupWorker(createInterceptor(handlers))
 await worker.start()
 ```
 
-```javascript
-// 2. 在应用中使用控制器 SDK
-import { initMSWController } from '@msw-controller/sdk'
+```tsx
+// 2. 在应用（如 React）中使用控制器 SDK
+import { useEffect } from 'react';
+import { initMSWController, MSWControllerSDK } from '@msw-controller/sdk';
 
-// 初始化控制器
-const controller = initMSWController({
-  position: { x: 20, y: 20 },
-  isDarkMode: false
-})
+function App() {
+  useEffect(() => {
+    const mswController = initMSWController();
+    return () => {
+      mswController.destroy();
+    };
+  }, []);
 
-// 控制器会自动显示悬浮按钮和控制面板
+  return (
+    <div className="App">
+      {/* 你的应用内容 */}
+    </div>
+  );
+}
+
+export default App
 ```
 
 ## 开发
@@ -87,36 +90,9 @@ pnpm test
 pnpm lint
 ```
 
-### 项目结构
-
-```
-msw-controller/
-├── packages/
-│   ├── core/           # 核心包
-│   │   ├── src/
-│   │   ├── package.json
-│   │   └── vite.config.ts
-│   └── react/          # React 组件包
-│       ├── src/
-│       ├── package.json
-│       └── vite.config.ts
-├── reference/          # 参考资料
-├── package.json        # 根配置
-├── pnpm-workspace.yaml # workspace 配置
-└── README.md
-```
-
 ## 贡献
 
 欢迎提交 Issue 和 Pull Request！
-
-### 开发流程
-
-1. Fork 本仓库
-2. 创建特性分支 (`git checkout -b feature/amazing-feature`)
-3. 提交更改 (`git commit -m 'Add some amazing feature'`)
-4. 推送到分支 (`git push origin feature/amazing-feature`)
-5. 开启 Pull Request
 
 ## 许可证
 
@@ -125,5 +101,4 @@ MIT License - 查看 [LICENSE](LICENSE) 文件了解详情。
 ## 相关链接
 
 - [MSW 官方文档](https://mswjs.io/)
-- [问题反馈](https://github.com/your-username/msw-controller/issues)
-- [更新日志](CHANGELOG.md)
+- [问题反馈](https://github.com/007sair/msw-controller/issues)
