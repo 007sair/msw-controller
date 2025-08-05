@@ -1,15 +1,15 @@
+import type { MSWController } from '@msw-controller/core'
 import { createControlPanel } from './components/ControlPanelJS'
 import { createFloatingButton } from './components/FloatingButtonJS'
-import { getController, type MSWController } from '@msw-controller/core'
 import type { MSWControllerConfig, Position } from './types'
 
 /**
- * MSW 控制器 SDK - 纯 JavaScript 实现
- * 提供浮动按钮和控制面板来管理 MSW 处理器
+ * MSW Controller SDK - Pure JavaScript Implementation
+ * Provides floating button and control panel to manage MSW handlers
  */
 export class MSWControllerSDK {
-  private config: Required<Omit<MSWControllerConfig, 'controller'>>
-  private controller: MSWController | undefined = undefined
+  private config: Required<MSWControllerConfig>
+  private controller: MSWController
   private isOpen: boolean = false
   private buttonElement: HTMLElement | null = null
   private panelElement: HTMLElement | null = null
@@ -17,18 +17,15 @@ export class MSWControllerSDK {
   private container: HTMLElement
 
   /**
-   * 创建 MSW 控制器 SDK 实例
-   * @param config 控制器配置选项
+   * Create MSW Controller SDK instance
+   * @param controller MSW controller instance (required)
+   * @param config Controller configuration options
    */
-  constructor(config: MSWControllerConfig = {}) {
-    // 从 localStorage 加载保存的主题偏好
+  constructor(controller: MSWController, config: MSWControllerConfig = {}) {
     const savedTheme = MSWControllerSDK.loadThemePreferenceStatic()
 
-    // 设置 controller 实例
-    this.controller = config.controller
+    this.controller = controller
 
-    // 合并用户配置和默认值
-    const { controller: _, ...configWithoutController } = config
     this.config = {
       initialPosition: { bottom: 50, right: 50 },
       buttonContent: 'MSW',
@@ -40,17 +37,14 @@ export class MSWControllerSDK {
       container: document.body,
       onToggle: () => {},
       onHandlerToggle: this.handleHandlerToggle.bind(this),
-      ...configWithoutController,
+      ...config,
     }
 
-    // 如果用户提供了 onHandlerToggle，包装处理逻辑
+    // Wrap onHandlerToggle if provided by user
     if (config.onHandlerToggle) {
       const userCallback = config.onHandlerToggle
       this.config.onHandlerToggle = (handlerId: string, enabled: boolean) => {
-        // 处理异步操作而不阻塞 UI
-        this.handleHandlerToggle(handlerId, enabled).catch(() => {
-          // 静默处理错误以避免生产环境控制台噪音
-        })
+        this.handleHandlerToggle(handlerId, enabled).catch(() => {})
         userCallback(handlerId, enabled)
       }
     }
@@ -63,13 +57,11 @@ export class MSWControllerSDK {
   }
 
   /**
-   * 初始化 MSW 控制器
+   * Initialize MSW controller
    */
   private init(): void {
-    // 默认显示悬浮按钮
     this.createButton()
 
-    // 加载保存的面板可见性状态
     const savedLayout = this.loadPanelLayout()
     const shouldOpen = savedLayout.isVisible === true
 
@@ -80,7 +72,7 @@ export class MSWControllerSDK {
   }
 
   /**
-   * 创建浮动按钮
+   * Create floating button
    */
   private createButton(): void {
     this.buttonElement = createFloatingButton({
@@ -97,7 +89,7 @@ export class MSWControllerSDK {
   }
 
   /**
-   * 创建控制面板
+   * Create control panel
    */
   private createPanel(): void {
     if (this.panelElement) {
@@ -121,7 +113,7 @@ export class MSWControllerSDK {
   }
 
   /**
-   * 切换控制面板
+   * Toggle control panel
    */
   public toggle(): void {
     if (this.isOpen) {
@@ -132,7 +124,7 @@ export class MSWControllerSDK {
   }
 
   /**
-   * 打开控制面板
+   * Open control panel
    */
   public open(): void {
     if (!this.isOpen) {
@@ -144,7 +136,7 @@ export class MSWControllerSDK {
   }
 
   /**
-   * 关闭控制面板
+   * Close control panel
    */
   public close(): void {
     if (this.isOpen && this.panelElement) {
@@ -157,7 +149,7 @@ export class MSWControllerSDK {
   }
 
   /**
-   * 显示浮动按钮
+   * Show floating button
    */
   public showButton(): void {
     if (!this.buttonElement) {
@@ -168,7 +160,7 @@ export class MSWControllerSDK {
   }
 
   /**
-   * 隐藏浮动按钮
+   * Hide floating button
    */
   public hideButton(): void {
     if (this.buttonElement) {
@@ -207,9 +199,7 @@ export class MSWControllerSDK {
     }
   }
 
-  /**
-   * Destroy the controller and clean up
-   */
+  // Clean up and destroy controller
   public destroy(): void {
     if (this.buttonElement) {
       this.buttonElement.remove()
@@ -224,22 +214,13 @@ export class MSWControllerSDK {
     this.isOpen = false
   }
 
-  /**
-   * Handle handler toggle with msw-controller-config persistence
-   */
+  // Handle handler toggle with persistence
   private async handleHandlerToggle(handlerId: string, enabled: boolean): Promise<void> {
     try {
-      // 优先使用传入的 controller 实例，如果没有则使用全局 controller
-      const controller = this.controller || getController()
-
-      if (controller) {
-        // Use the controller to toggle handler state
-        // This will automatically save to msw-controller-config
-        controller.toggleHandler(handlerId, enabled)
+      if (this.controller) {
+        this.controller.toggleHandler(handlerId, enabled)
       }
-    } catch {
-      // Silently handle errors - handler state management is non-critical for UI
-    }
+    } catch {}
   }
 
   /**
@@ -254,11 +235,8 @@ export class MSWControllerSDK {
    */
   public async loadHandlerStates(): Promise<Record<string, boolean>> {
     try {
-      // 优先使用传入的 controller 实例，如果没有则使用全局 controller
-      const controller = this.controller || getController()
-
-      if (controller) {
-        const handlers = controller.getHandlers()
+      if (this.controller) {
+        const handlers = this.controller.getHandlers()
         const states: Record<string, boolean> = {}
         handlers.forEach((handler) => {
           states[handler.id] = handler.enabled
@@ -267,7 +245,6 @@ export class MSWControllerSDK {
       }
       return {}
     } catch {
-      // Return empty states if loading fails
       return {}
     }
   }
@@ -303,9 +280,7 @@ export class MSWControllerSDK {
         timestamp: Date.now(),
       }
       localStorage.setItem('msw-controller-sdk', JSON.stringify(layoutData))
-    } catch {
-      // Silently handle localStorage errors
-    }
+    } catch {}
   }
 
   /**
@@ -343,9 +318,7 @@ export class MSWControllerSDK {
       layoutData.timestamp = Date.now()
 
       localStorage.setItem('msw-controller-sdk', JSON.stringify(layoutData))
-    } catch {
-      // Silently handle localStorage errors
-    }
+    } catch {}
   }
 
   /**
@@ -376,7 +349,6 @@ export class MSWControllerSDK {
       const layoutData = JSON.parse(data)
       return layoutData.darkMode
     } catch {
-      // Return undefined if loading fails
       return undefined
     }
   }
@@ -389,7 +361,6 @@ export class MSWControllerSDK {
       const data = localStorage.getItem('msw-controller-sdk')
       const layoutData = data ? JSON.parse(data) : {}
 
-      // Remove position and size, keep other settings
       delete layoutData.position
       delete layoutData.size
       layoutData.timestamp = Date.now()

@@ -29,43 +29,27 @@ pnpm add @msw-controller/sdk
 ### 基础用法
 
 ```javascript
-import { initMSWController } from '@msw-controller/sdk';
+import { renderMSWController } from '@msw-controller/sdk';
+import { getControllerInstance } from '@msw-controller/core';
 
-// 使用默认设置初始化
-const mswController = initMSWController();
-```
+// 获取或创建 MSW 控制器实例
+const controller = getControllerInstance();
 
-### CDN 方式
-
-```html
-<!DOCTYPE html>
-<html>
-<head>
-  <title>MSW Controller 示例</title>
-</head>
-<body>
-  <script src="https://unpkg.com/@msw-controller/sdk@latest/dist/index.umd.js"></script>
-</body>
-</html>
-```
-
-```javascript
-import { initMSWController } from '@msw-controller/sdk';
-import { getController } from '@msw-controller/core';
-
-// 使用自定义控制器初始化 SDK
-const mswController = initMSWController({
-  controller: getController(); // 需要从 core 中拿到实例，否则无法同步数据到 UI 中
-});
+// 使用默认设置初始化 SDK
+const mswController = renderMSWController(controller);
 ```
 
 ### 高级配置
 
 ```javascript
 import { MSWControllerSDK } from '@msw-controller/sdk';
+import { getControllerInstance } from '@msw-controller/core';
 
-const mswController = new MSWControllerSDK({
-  controller: myController, // 自定义 MSW 控制器实例
+// 获取 MSW 控制器实例
+const controller = getControllerInstance();
+
+// 创建 SDK 实例
+const mswController = new MSWControllerSDK(controller, {
   initialPosition: { bottom: 50, right: 50 }, // 初始按钮位置
   buttonContent: 'MSW', // 自定义按钮文本或 HTML 元素
   buttonClassName: 'my-button-class', // 按钮的自定义 CSS 类
@@ -83,11 +67,12 @@ const mswController = new MSWControllerSDK({
 
 ## API 参考
 
-### `initMSWController(config?)`
+### `renderMSWController(controller, config?)`
 
 一个便捷函数，用于创建和初始化 MSWControllerSDK 实例。
 
 **参数：**
+- `controller`（必需）：类型为 `MSWController` 的控制器实例
 - `config`（可选）：类型为 `MSWControllerConfig` 的配置对象
 
 **返回值：** MSWControllerSDK 实例
@@ -99,14 +84,48 @@ const mswController = new MSWControllerSDK({
 #### 构造函数
 
 ```typescript
-new MSWControllerSDK(config?: MSWControllerConfig)
+new MSWControllerSDK(controller: MSWController, config?: MSWControllerConfig)
 ```
+
+#### 公共方法
+
+##### 面板控制
+
+- `toggle(): void` - 切换控制面板的显示/隐藏状态
+- `open(): void` - 打开控制面板
+- `close(): void` - 关闭控制面板
+
+##### 按钮控制
+
+- `showButton(): void` - 显示浮动按钮
+- `hideButton(): void` - 隐藏浮动按钮
+
+##### 配置管理
+
+- `updateConfig(newConfig: Partial<MSWControllerConfig>): void` - 动态更新配置
+- `getState(): object` - 获取当前状态（包括面板开关状态、按钮位置、配置等）
+
+##### 数据管理
+
+- `loadHandlerStates(): Promise<Record<string, boolean>>` - 加载所有 Handler 的启用状态
+
+##### 持久化存储
+
+- `savePanelLayout(position: {x: number, y: number}, size: {width: number, height: number}): void` - 保存面板布局
+- `loadPanelLayout(): object` - 加载面板布局
+- `savePanelVisibility(isVisible: boolean): void` - 保存面板可见性状态
+- `saveThemePreference(isDarkMode: boolean): void` - 保存主题偏好
+- `loadThemePreference(): boolean | undefined` - 加载主题偏好
+- `resetPanelLayout(): void` - 重置面板布局到默认状态
+
+##### 生命周期
+
+- `destroy(): void` - 销毁 SDK 实例，清理所有 DOM 元素和事件监听器
 
 #### 配置选项
 
 ```typescript
 interface MSWControllerConfig {
-  controller?: MSWController; // 自定义 MSW 控制器实例
   initialPosition?: Position; // 初始按钮位置
   buttonContent?: string | HTMLElement; // 按钮文本/内容
   buttonClassName?: string; // 按钮的自定义 CSS 类
@@ -134,28 +153,66 @@ interface Position {
 ```typescript
 interface Window {
   MSWControllerSDK: {
-    initMSWController: (config?: MSWControllerConfig) => MSWControllerSDK;
+    renderMSWController: (controller: MSWController, config?: MSWControllerConfig) => MSWControllerSDK;
+    MSWControllerSDK: typeof MSWControllerSDK;
   };
 }
 ```
 
-## 示例
+## 使用示例
+
+### 基本操作示例
+
+```javascript
+import { renderMSWController } from '@msw-controller/sdk';
+import { getControllerInstance } from '@msw-controller/core';
+
+// 创建 SDK 实例
+const controller = getControllerInstance();
+const sdk = renderMSWController(controller, {
+  darkMode: true,
+  onHandlerToggle: (handlerId, enabled) => {
+    console.log(`Handler ${handlerId} is now ${enabled ? 'enabled' : 'disabled'}`);
+  }
+});
+
+// 控制面板操作
+sdk.open();           // 打开面板
+sdk.close();          // 关闭面板
+sdk.toggle();         // 切换面板状态
+
+// 按钮控制
+sdk.hideButton();     // 隐藏浮动按钮
+sdk.showButton();     // 显示浮动按钮
+
+// 动态更新配置
+sdk.updateConfig({
+  darkMode: false,
+  panelWidth: 500
+});
+
+// 获取当前状态
+const state = sdk.getState();
+console.log('当前状态:', state);
+
+// 清理资源
+sdk.destroy();
+```
 
 ### React 集成
 
 ```jsx
 import React, { useEffect } from 'react';
-import { initMSWController } from '@msw-controller/sdk';
-import { getController } from '@msw-controller/core';
+import { renderMSWController } from '@msw-controller/sdk';
+import { getControllerInstance } from '@msw-controller/core';
 
 function App() {
   useEffect(() => {
     // 获取 MSW 控制器实例
-    const controller = getController();
+    const controller = getControllerInstance();
     
     // 初始化 MSW 控制器 SDK
-    const mswController = initMSWController({
-      controller: controller,
+    const mswController = renderMSWController(controller, {
       initialPosition: { bottom: 50, right: 50 },
       darkMode: true,
       onToggle: (isOpen) => {
@@ -180,6 +237,69 @@ function App() {
 }
 
 export default App;
+```
+
+### 完整使用流程
+
+```javascript
+import { http, HttpResponse } from 'msw';
+import { createInterceptor, getControllerInstance } from '@msw-controller/core';
+import { renderMSWController } from '@msw-controller/sdk';
+
+// 1. 定义 MSW handlers
+const handlers = [
+  http.get('/api/users', () => {
+    return HttpResponse.json([
+      { id: 1, name: 'John Doe' },
+      { id: 2, name: 'Jane Smith' }
+    ]);
+  }),
+  
+  http.post('/api/users', () => {
+    return HttpResponse.json({ id: 3, name: 'New User' }, { status: 201 });
+  }),
+  
+  http.get('/api/posts/:id', ({ params }) => {
+    return HttpResponse.json({
+      id: params.id,
+      title: 'Sample Post',
+      content: 'This is a sample post content.'
+    });
+  })
+];
+
+// 2. 创建拦截器（这会自动注册 handlers 到 controller）
+const interceptor = createInterceptor(handlers, {
+  enableRequestLogging: true,
+  maxRequestRecords: 50
+});
+
+// 3. 获取 controller 实例
+const controller = getControllerInstance();
+
+// 4. 创建并配置 SDK
+const sdk = renderMSWController(controller, {
+  initialPosition: { bottom: 20, right: 20 },
+  darkMode: true,
+  panelWidth: 400,
+  panelHeight: 500,
+  onToggle: (isOpen) => {
+    console.log(`面板${isOpen ? '已打开' : '已关闭'}`);
+  },
+  onHandlerToggle: (handlerId, enabled) => {
+    console.log(`${handlerId} ${enabled ? '已启用' : '已禁用'}`);
+  }
+});
+
+// 5. 现在你可以在应用中发起请求，这些请求会被拦截并显示在控制面板中
+fetch('/api/users')
+  .then(response => response.json())
+  .then(data => console.log('用户数据:', data));
+
+// 6. 在应用卸载时清理资源
+window.addEventListener('beforeunload', () => {
+  sdk.destroy();
+});
 ```
 
 ## 贡献

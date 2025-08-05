@@ -1,16 +1,13 @@
-import type { MSWController } from '@msw-controller/core'
 import type { ReactNode } from 'react'
 
-// 存储接口定义
+// Storage interface for persistence
 export interface StorageInterface {
   getItem(key: string): string | null
   setItem(key: string, value: string): void
   removeItem(key: string): void
 }
 
-/**
- * UI 元素位置配置
- */
+// UI element position configuration
 export interface Position {
   top?: number
   bottom?: number
@@ -18,11 +15,8 @@ export interface Position {
   right?: number
 }
 
-/**
- * MSW 控制器 SDK 配置选项
- */
+// MSW Controller SDK configuration options
 export interface MSWControllerConfig {
-  controller?: MSWController
   initialPosition?: Position
   buttonContent?: string | HTMLElement
   buttonClassName?: string

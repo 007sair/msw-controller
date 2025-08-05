@@ -8,13 +8,11 @@ export interface FloatingButtonConfig {
   onClick: () => void
 }
 
-/**
- * 创建浮动按钮元素
- */
+// Create floating button element
 export function createFloatingButton(config: FloatingButtonConfig): HTMLElement {
   const button = document.createElement('div')
 
-  // 设置基础内联样式
+  // Set base inline styles
   Object.assign(button.style, {
     position: 'fixed',
     width: '60px',

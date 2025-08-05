@@ -1,18 +1,18 @@
-import { getController, type MSWController } from '@msw-controller/core'
+import type { MSWController } from '@msw-controller/core'
 import type { MSWControllerSDK } from '..'
 
-// MSW Handler 信息接口
+// MSW Handler info interface
 interface MSWHandlerInfo {
   method?: string
   path?: string
 }
 
-// 扩展的 MSW Handler 接口
+// Extended MSW Handler interface
 interface ExtendedMSWHandler {
   info?: MSWHandlerInfo
 }
 
-// 扩展的 HTMLElement 接口，包含清理方法
+// Extended HTMLElement with cleanup methods
 interface ExtendedHTMLElement extends HTMLElement {
   cleanup?: () => void
   updateInterval?: number
@@ -26,7 +26,7 @@ export interface ControlPanelConfig {
   onClose: () => void
   onHandlerToggle: (handlerId: string, enabled: boolean) => void
   sdkInstance?: MSWControllerSDK
-  controller?: MSWController
+  controller: MSWController
 }
 
 interface RequestRecord {
@@ -40,9 +40,7 @@ interface RequestRecord {
   handlerName?: string
 }
 
-/**
- * 创建可拖拽的控制面板元素
- */
+// Create draggable control panel element
 export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElement {
   const isDark = config.darkMode
 
@@ -52,11 +50,11 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
   let panelPosition = { x: 0, y: 0 }
   let isDragging = false
   let dragOffset = { x: 0, y: 0 }
+
+  const controller = config.controller
+
   const getHandlerEnabledByHandlerId = (handlerId: string): boolean => {
     try {
-      // 优先使用传入的 controller 实例，如果没有则使用全局 controller
-      const controller = config.controller || getController()
-      if (!controller) return false
       const handler = controller.getHandler(handlerId)
       return handler ? handler.enabled : false
     } catch {
@@ -111,7 +109,7 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
 
   panelPosition = calculateInitialPosition()
 
-  // Create main panel container - 朴实简洁的设计
+  // Create main panel container with clean design
   const panel = document.createElement('div')
   Object.assign(panel.style, {
     position: 'fixed',
@@ -119,10 +117,10 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
     top: `${panelPosition.y}px`,
     width: `${config.width}px`,
     height: `${config.height}px`,
-    background: isDark ? '#2d3748' : '#ffffff', // 去掉透明度，使用纯色背景
-    borderRadius: '6px', // 减少圆角
-    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)', // 减少阴影
-    border: `1px solid ${isDark ? '#4a5568' : '#e2e8f0'}`, // 简化边框
+    background: isDark ? '#2d3748' : '#ffffff',
+    borderRadius: '6px',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+    border: `1px solid ${isDark ? '#4a5568' : '#e2e8f0'}`,
     overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column',
@@ -134,7 +132,7 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
     panel.className = config.className
   }
 
-  // Create header with drag functionality - 简洁设计
+  // Create header with drag functionality
   const header = document.createElement('div')
   Object.assign(header.style, {
     padding: '0 16px',
@@ -198,7 +196,6 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
   header.appendChild(title)
   header.appendChild(closeButton)
 
-  // Create content area
   const content = document.createElement('div')
   Object.assign(content.style, {
     flex: '1',
@@ -207,7 +204,6 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
     flexDirection: 'column',
   })
 
-  // Create tab container
   const tabContainer = document.createElement('div')
   Object.assign(tabContainer.style, {
     padding: '0 16px',
@@ -225,17 +221,9 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
   // Function to get tab title with count
   const getTabTitle = (tabName: string, tabKey: string): string => {
     if (tabKey === 'config') {
-      try {
-        const controller = config.controller || getController()
-        if (controller) {
-          const handlers = controller.getHandlers()
-          const enabledCount = handlers.filter((handler) => handler.enabled).length
-          return `${tabName}(${enabledCount})`
-        }
-      } catch {
-        // 全局控制器还未准备好，返回默认标题
-        console.debug('Global controller not ready yet, using default tab title')
-      }
+      const handlers = controller.getHandlers()
+      const enabledCount = handlers.filter((handler) => handler.enabled).length
+      return `${tabName}(${enabledCount})`
     }
     return tabName
   }
@@ -294,7 +282,6 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
     })
   }
 
-  // Create search container
   const searchContainer = document.createElement('div')
   Object.assign(searchContainer.style, {
     padding: '12px 16px 0',
@@ -325,7 +312,6 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
     updateTabContent()
   })
 
-  // Create select all container for config tab
   const selectAllContainer = document.createElement('div')
   Object.assign(selectAllContainer.style, {
     display: 'none', // Initially hidden
@@ -351,7 +337,6 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
   searchContainer.appendChild(searchInput)
   searchContainer.appendChild(selectAllContainer)
 
-  // Create tab content area
   const tabContent = document.createElement('div')
   Object.assign(tabContent.style, {
     padding: '12px 16px',
@@ -380,8 +365,7 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
 
   // Render requests tab
   const renderRequestsTab = () => {
-    const controller = config.controller || getController()
-    requests = controller ? controller.getRequestRecords() : []
+    requests = controller.getRequestRecords()
 
     if (requests.length === 0) {
       const emptyDiv = document.createElement('div')
@@ -405,7 +389,7 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
 
     filteredRequests.forEach((request) => {
       const requestItem = document.createElement('div')
-      // 使用handlerId判断启用状态
+      // Check enabled state using handlerId
       const isEnabled = request.handlerId ? getHandlerEnabledByHandlerId(request.handlerId) : false
 
       Object.assign(requestItem.style, {
@@ -436,16 +420,12 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
         requestItem.style.boxShadow = 'none'
       })
 
-      // Only allow click for requests with handlerId
       if (request.handlerId) {
         const handlerId = request.handlerId // Store in const to satisfy TypeScript
         requestItem.addEventListener('click', () => {
           const newEnabled = !isEnabled
 
-          const controller = config.controller || getController()
-          if (controller) {
-            controller.toggleHandler(handlerId, newEnabled)
-          }
+          controller.toggleHandler(handlerId, newEnabled)
           config.onHandlerToggle(handlerId, newEnabled)
           updateTabContent()
           updateTabStyles()
@@ -455,7 +435,6 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
         requestItem.style.cursor = 'default'
       }
 
-      // Enable icon (only show for requests with handlerId)
       let enableIcon = null
       if (request.handlerId) {
         enableIcon = document.createElement('div')
@@ -518,7 +497,7 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
         })
       }
 
-      // Top row: enable icon + method + matched badge + time (两端对齐)
+      // Top row: enable icon + method + matched badge + time
       const topRow = document.createElement('div')
       Object.assign(topRow.style, {
         display: 'flex',
@@ -557,7 +536,7 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
         wordBreak: 'break-all',
         whiteSpace: 'normal',
         lineHeight: '1.4',
-        marginLeft: request.handlerId ? '28px' : '0px', // 有handlerId时对齐到method位置，否则不缩进
+        marginLeft: request.handlerId ? '28px' : '0px', // Align with method when handlerId exists
       })
 
       requestItem.appendChild(topRow)
@@ -568,8 +547,7 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
 
   // Render config tab
   const renderConfigTab = () => {
-    const controller = config.controller || getController()
-    const handlers = controller ? controller.getHandlers() : []
+    const handlers = controller.getHandlers()
 
     if (handlers.length === 0) {
       const emptyDiv = document.createElement('div')
@@ -584,11 +562,9 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
       return
     }
 
-    // Filter handlers based on search keyword
     const filteredHandlers = handlers.filter((handler) => {
       if (searchKeyword === '') return true
 
-      // Parse method and url from handler for search
       let method = 'GET'
       let url = handler.id
 
@@ -608,7 +584,6 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
       return searchText.includes(searchKeyword.toLowerCase())
     })
 
-    // Update select all checkbox state
     const selectedCount = filteredHandlers.filter((handler) => handler.enabled).length
     const totalCount = filteredHandlers.length
     selectAllCheckbox.checked = selectedCount === totalCount && totalCount > 0
@@ -629,25 +604,19 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
       const newValue = newSelectAllCheckbox.checked
       filteredHandlers.forEach((handler) => {
         config.onHandlerToggle(handler.id, newValue)
-        const controller = config.controller || getController()
-        if (controller) {
-          controller.toggleHandler(handler.id, newValue)
-        }
+        controller.toggleHandler(handler.id, newValue)
       })
       updateTabStyles()
       updateTabContent()
     })
 
-    // Render handler items
     filteredHandlers.forEach((handler) => {
       const enabled = handler.enabled
 
-      // Parse method and url from handler
       let method = 'GET'
       let url = handler.id
 
       if (handler.handler) {
-        // Try to extract method and url from MSW handler
         const mswHandler = handler.handler as ExtendedMSWHandler
         if (mswHandler.info) {
           if (mswHandler.info.method) {
@@ -679,10 +648,7 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
       handlerItem.addEventListener('click', () => {
         const newEnabled = !enabled
         config.onHandlerToggle(handler.id, newEnabled)
-        const controller = config.controller || getController()
-        if (controller) {
-          controller.toggleHandler(handler.id, newEnabled)
-        }
+        config.controller.toggleHandler(handler.id, newEnabled)
         updateTabContent()
         updateTabStyles()
       })
@@ -710,9 +676,7 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
     })
   }
 
-  // Render settings tab
   const renderSettingsTab = () => {
-    // Create settings container
     const settingsContainer = document.createElement('div')
     Object.assign(settingsContainer.style, {
       display: 'flex',
@@ -720,7 +684,6 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
       gap: '16px',
     })
 
-    // Dark theme setting
     const themeToggle = document.createElement('div')
     Object.assign(themeToggle.style, {
       display: 'flex',
@@ -739,7 +702,7 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
 
     const themeCheckbox = document.createElement('input')
     themeCheckbox.type = 'checkbox'
-    // Load theme preference from SDK
+
     const savedTheme = config.sdkInstance?.loadThemePreference()
     themeCheckbox.checked = savedTheme !== undefined ? savedTheme : isDark || false
     Object.assign(themeCheckbox.style, {
@@ -815,7 +778,6 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
     storageSection.appendChild(storageLabel)
     storageSection.appendChild(clearButton)
 
-    // Panel reset section
     const panelSection = document.createElement('div')
     Object.assign(panelSection.style, {
       display: 'flex',
@@ -850,7 +812,6 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
     })
 
     resetPositionButton.addEventListener('click', () => {
-      // Reset panel position using SDK
       if (config.sdkInstance?.resetPanelLayout) {
         config.sdkInstance.resetPanelLayout()
         alert('面板位置和大小已重置，请刷新页面以应用更改')
@@ -872,7 +833,6 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
     })
 
     resetSizeButton.addEventListener('click', () => {
-      // Reset panel size to default
       panel.style.width = '400px'
       panel.style.height = '500px'
       config.width = 400
@@ -967,7 +927,7 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
     if (activeTab === 'requests') {
       updateTabContent()
     }
-    // Always update tab styles to refresh handler count
+
     updateTabStyles()
   }, 1000)
 
@@ -981,7 +941,6 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
   panel.appendChild(header)
   panel.appendChild(content)
 
-  // Create resize handle for bottom-right corner
   const resizeHandle = document.createElement('div')
   Object.assign(resizeHandle.style, {
     position: 'absolute',

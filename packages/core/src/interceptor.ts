@@ -10,7 +10,7 @@ import type {
   RequestRecord,
 } from './types'
 
-// 自定义路径匹配函数，支持静态路径、参数路径(:id)和通配符(*)
+// Custom path matcher supporting static paths, parameters (:id) and wildcards (*)
 function createPathMatcher(path: string): {
   test: (pathname: string) => boolean
 } {
@@ -26,6 +26,9 @@ function createPathMatcher(path: string): {
   }
 }
 
+/**
+ * Simple event emitter implementation for MSW controller events
+ */
 class SimpleEventEmitter implements EventEmitter {
   private listeners = new Map<MSWControllerEvent, Set<EventListener>>()
 
@@ -50,6 +53,7 @@ class SimpleEventEmitter implements EventEmitter {
         try {
           listener(data)
         } catch (error) {
+          // Prevent listener errors from breaking the emission process
           console.error(`Error in event listener for ${event}:`, error)
         }
       })
@@ -57,6 +61,9 @@ class SimpleEventEmitter implements EventEmitter {
   }
 }
 
+/**
+ * Core controller for managing MSW handlers and request interception
+ */
 export class MSWController {
   private handlers = new Map<string, HandlerConfig>()
   private requestRecords: RequestRecord[] = []
@@ -147,6 +154,7 @@ export class MSWController {
     if (savedConfig) {
       const existingConfig = this.handlers.get(handlerId)
       if (existingConfig) {
+        // Restore saved configuration while preserving defaults
         existingConfig.enabled = savedConfig.enabled ?? existingConfig.enabled
         existingConfig.name = savedConfig.name ?? existingConfig.name
         existingConfig.description = savedConfig.description ?? existingConfig.description
@@ -158,8 +166,10 @@ export class MSWController {
   recordRequest(record: RequestRecord): void {
     if (!this.config.enableRequestLogging) return
 
+    // Add new record to the beginning of the array
     this.requestRecords.unshift(record)
 
+    // Maintain max records limit
     if (this.requestRecords.length > this.config.maxRequestRecords!) {
       this.requestRecords = this.requestRecords.slice(0, this.config.maxRequestRecords!)
     }
@@ -184,10 +194,10 @@ export class MSWController {
 let globalController: MSWController | null = null
 
 /**
- * 创建全局拦截器，可直接用于 setupWorker
- * @param handlers MSW 请求处理器数组
- * @param config 可选配置
- * @returns 可传给 setupWorker 的拦截器
+ * Creates a global interceptor that can be used directly with setupWorker
+ * @param handlers Array of MSW request handlers
+ * @param config Optional configuration
+ * @returns Interceptor that can be passed to setupWorker
  *
  * @example
  * ```typescript
@@ -202,12 +212,12 @@ export function createInterceptor(
   handlers: RequestHandler[],
   config?: MSWControllerConfig,
 ): RequestHandler {
-  // 确保全局控制器存在
+  // Ensure global controller exists
   if (!globalController) {
     globalController = new MSWController(config)
   }
 
-  // 注册所有 handlers
+  // Register all handlers
   const handlerConfigs = handlers.map((handler, index) => {
     let id = `handler-${index}`
     let name = `Handler ${index + 1}`
@@ -239,7 +249,7 @@ export function createInterceptor(
     globalController!.registerHandler(config)
   })
 
-  // 返回全局拦截器
+  // Return global interceptor
   return http.all('*', async ({ request }) => {
     const requestRecord: RequestRecord = {
       id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -254,7 +264,7 @@ export function createInterceptor(
     const allConfigs = globalController!.getHandlers()
     let matchedConfig: HandlerConfig | null = null
 
-    // 遍历所有handler进行路径匹配
+    // Iterate through all handlers for path matching
     for (const config of allConfigs) {
       const handler = config.handler
       const info = (handler as any).info as {
@@ -286,7 +296,7 @@ export function createInterceptor(
       }
     }
 
-    // 执行匹配的启用handler
+    // Execute matched enabled handler
     if (matchedConfig) {
       const handler = matchedConfig.handler
 
@@ -317,19 +327,13 @@ export function createInterceptor(
 }
 
 /**
- * 获取或创建全局控制器实例
- * @param config 可选配置
- * @returns MSWController 实例
+ * Gets or creates the global controller instance
+ * @param config Optional configuration
+ * @returns MSWController instance
  */
 export function getControllerInstance(config?: MSWControllerConfig): MSWController {
   if (!globalController) {
     globalController = new MSWController(config)
   }
-  return globalController
-}
-
-
-
-export function getController(): MSWController | null {
   return globalController
 }

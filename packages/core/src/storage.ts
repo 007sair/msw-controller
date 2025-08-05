@@ -2,6 +2,9 @@ import type { HandlerConfig, StorageInterface } from './types'
 
 export const MSW_LOCAL_STORAGE_KEY = 'msw-controller-config'
 
+/**
+ * Default storage implementation using browser localStorage
+ */
 class DefaultStorage implements StorageInterface {
   getItem(key: string): string | null {
     if (typeof window !== 'undefined' && window.localStorage) {
@@ -23,6 +26,9 @@ class DefaultStorage implements StorageInterface {
   }
 }
 
+/**
+ * Mock storage implementation for testing environments
+ */
 class MockStorage implements StorageInterface {
   private storage = new Map<string, string>()
 
@@ -43,6 +49,9 @@ class MockStorage implements StorageInterface {
   }
 }
 
+/**
+ * Configuration storage manager for MSW controller settings
+ */
 export class ConfigStorage {
   private storage: StorageInterface
 
@@ -53,6 +62,7 @@ export class ConfigStorage {
   saveHandlerConfigs(configs: HandlerConfig[]): void {
     try {
       const configData = {
+        // Only save serializable configuration data
         handlers: configs.map((config) => ({
           id: config.id,
           name: config.name,

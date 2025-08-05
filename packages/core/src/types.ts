@@ -1,5 +1,8 @@
 import type { RequestHandler } from 'msw'
 
+/**
+ * Configuration for a single MSW handler
+ */
 export interface HandlerConfig {
   id: string
   name: string
@@ -9,6 +12,9 @@ export interface HandlerConfig {
   tags?: string[]
 }
 
+/**
+ * Record of an intercepted HTTP request
+ */
 export interface RequestRecord {
   id: string
   url: string
@@ -42,12 +48,18 @@ export interface StorageInterface {
   removeItem(key: string): void
 }
 
+/**
+ * Configuration options for MSWController
+ */
 export interface MSWControllerConfig {
   storage?: StorageInterface
   enableRequestLogging?: boolean
   maxRequestRecords?: number
 }
 
+/**
+ * Events emitted by MSWController
+ */
 export type MSWControllerEvent =
   | 'handler-registered'
   | 'handler-unregistered'

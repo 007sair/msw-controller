@@ -26,29 +26,35 @@ npm install @msw-controller/core @msw-controller/sdk
 
 ### 基础用法
 
-```typescript
-// 1. 设置 MSW Controller
-import { setupWorker } from 'msw/browser'
-import { createInterceptor } from '@msw-controller/core'
-import { handlers } from './mocks/handlers'
+使用 msw-controller 前建议先熟悉 MSW 的基本用法。可以参考 [MSW 官方文档 - 浏览器集成](https://mswjs.io/docs/integrations/browser)。
 
-// 创建并启动 worker（一行代码完成所有设置）
-const worker = setupWorker(createInterceptor(handlers))
-await worker.start()
+```diff
+// src/mocks/browser.ts
+import { setupWorker } from 'msw/browser'
+import { handlers } from './handlers'
++ import { createInterceptor } from '@msw-controller/core' // 1. 导入核心拦截器
+ 
+- export const worker = setupWorker(...handlers)
++ export const worker = setupWorker(createInterceptor(...handlers)) // 2. 使用核心拦截器创建 worker
 ```
 
-```tsx
-// 2. 在应用（如 React）中使用控制器 SDK
+```diff
+// src/App.tsx
 import { useEffect } from 'react';
-import { initMSWController, MSWControllerSDK } from '@msw-controller/sdk';
++ import { getControllerInstance } from '@msw-controller/core'
++ import { renderMSWController } from '@msw-controller/sdk';
 
 function App() {
-  useEffect(() => {
-    const mswController = initMSWController();
-    return () => {
-      mswController.destroy();
-    };
-  }, []);
+
++  useEffect(() => {
++    const controller = getControllerInstance()
++    const mswController = renderMSWController(controller, {
++        // 自定义配置 
++    });
++    return () => {
++      mswController.destroy();
++    };
++  }, []);
 
   return (
     <div className="App">

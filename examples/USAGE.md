@@ -1,66 +1,40 @@
 # MSW Controller 集成指南
 
-本指南详细介绍如何在你的 React 项目中从零开始集成 MSW Controller，包含最佳实践和性能优化建议。
+本指南介绍如何在 React 项目中集成 MSW Controller。
 
 ## 🏗️ 架构概览
 
-### 三层架构设计
+MSW Controller 基于 MSW (Mock Service Worker) 构建，提供可视化的 Mock API 管理界面：
 
-```
-应用层 (App.tsx)
-├── SDK UI 初始化          # @msw-controller/sdk
-└── 用户交互界面
-
-核心层 (main.tsx + mocks/)
-├── MSW Controller 启动     # @msw-controller/core  
-├── 拦截器管理
-└── Mock API 定义           # MSW 原生
-
-基础层
-├── Service Worker         # MSW 运行时
-└── 浏览器 API 拦截
-```
+- **@msw-controller/core**: 拦截器管理和请求记录
+- **@msw-controller/sdk**: 可视化控制面板 UI
+- **MSW**: 底层的 Service Worker 拦截引擎
 
 ## 🚀 分步集成指南
 
-### 第一步：环境准备
-
-#### 1.1 安装必要依赖
+### 第一步：安装依赖
 
 ```bash
-# 基础依赖
-npm install msw @msw-controller/core @msw-controller/sdk
-
-# 或使用 pnpm（推荐）
+# 安装依赖
 pnpm add msw @msw-controller/core @msw-controller/sdk
-```
 
-#### 1.2 初始化 MSW Service Worker
-
-```bash
-# 生成 Service Worker 文件到 public 目录
+# 初始化 MSW Service Worker
 npx msw init public/ --save
 ```
 
-> ⚠️ **重要**：确保 `public/mockServiceWorker.js` 文件存在，这是 MSW 正常工作的前提。
-
 ### 第二步：定义 Mock API
 
-#### 2.1 创建 Mock 处理器 (`src/mocks/handlers.ts`)
-
-> 使用 **MSW 原生语法**定义 API 响应逻辑
+创建 `src/mocks/handlers.ts` 文件：
 
 ```typescript
 import { http, HttpResponse } from 'msw'
 
-// 模拟数据
 const users = [
   { id: 1, name: 'Alice Johnson', email: 'alice@example.com', role: 'Admin' },
   { id: 2, name: 'Bob Smith', email: 'bob@example.com', role: 'User' }
 ]
 
 export const handlers = [
-  // RESTful API 示例
   http.get('/api/users', () => {
     return HttpResponse.json({ success: true, data: users })
   }),
@@ -72,7 +46,6 @@ export const handlers = [
     return HttpResponse.json({ success: true, data: user }, { status: 201 })
   }),
   
-  // 错误处理示例
   http.get('/api/error', () => {
     return HttpResponse.json(
       { success: false, message: '服务器错误' }, 
@@ -80,7 +53,6 @@ export const handlers = [
     )
   }),
   
-  // 延迟响应示例
   http.get('/api/slow', async () => {
     await new Promise(resolve => setTimeout(resolve, 2000))
     return HttpResponse.json({ success: true, message: '延迟响应' })
@@ -88,25 +60,19 @@ export const handlers = [
 ]
 ```
 
-### 第三步：Core 包集成 - 拦截器管理
+### 第三步：Core 包集成
 
-#### 3.1 配置启动逻辑 (`src/mocks/browser.ts`)
-
-> 使用 **@msw-controller/core** 的简化 API
+创建 `src/mocks/browser.ts` 文件：
 
 ```typescript
 import { createInterceptor } from '@msw-controller/core'
 import { setupWorker } from 'msw/browser'
 import { handlers } from './handlers'
 
-// 按照 MSW 官方推荐的方式创建 worker
-// 使用 MSW Controller 的 createInterceptor 来增强 handlers
 export const worker = setupWorker(createInterceptor(handlers))
 ```
 
-#### 3.2 应用入口集成 (`src/main.tsx`)
-
-> 按照 **MSW 官方推荐**的方式集成
+修改 `src/main.tsx` 文件：
 
 ```typescript
 import React from 'react'
@@ -114,10 +80,6 @@ import ReactDOM from 'react-dom/client'
 import App from './App'
 import './index.css'
 
-/**
- * 按照 MSW 官方推荐的方式启用 mocking
- * 只在开发环境下启用，避免影响生产环境
- */
 async function enableMocking() {
   if (!import.meta.env.DEV) {
     return
@@ -126,7 +88,6 @@ async function enableMocking() {
   return worker.start()
 }
 
-// 启用 mocking 后再渲染应用
 enableMocking().then(() => {
   const root = ReactDOM.createRoot(document.getElementById('root')!)
   root.render(
@@ -137,59 +98,33 @@ enableMocking().then(() => {
 })
 ```
 
-### 第四步：SDK 包集成 - UI 控制面板
+### 第四步：SDK 包集成
 
-#### 4.1 集成 UI 控制面板 (`src/App.tsx`)
-
-> 使用 **@msw-controller/sdk** 提供可视化管理界面
+在 `src/App.tsx` 中初始化控制面板：
 
 ```typescript
 import React, { useEffect } from 'react'
-import { initMSWController } from '@msw-controller/sdk'
+import { getControllerInstance } from '@msw-controller/core'
+import { renderMSWController } from '@msw-controller/sdk'
 
 function App() {
-  // SDK 初始化：创建悬浮控制面板
   useEffect(() => {
-    let mswController: any = null
-    
-    try {
-      mswController = initMSWController({
-        // 位置配置
-        initialPosition: { 
-          bottom: 80,  // 距离底部
-          right: 50    // 距离右侧
-        },
-        
-        // 外观配置
-        darkMode: false,           // 主题模式
-        buttonContent: 'MSW',      // 按钮文字
-        enableDragging: true,      // 启用拖拽
-        
-        // 高级配置
-        autoHide: false,           // 自动隐藏
-        showOnHover: true,         // 悬停显示
-      })
-      
-      console.log('✅ MSW Controller SDK 就绪')
-    } catch (error) {
-      console.error('❌ SDK 初始化失败:', error)
-      console.warn('⚠️ 控制面板不可用，但不影响 Mock 功能')
-    }
-
-    // 重要：清理资源，避免内存泄漏
+    const controller = getControllerInstance()
+    const mswController = renderMSWController(controller, {
+      initialPosition: { bottom: 80, right: 50 },
+      darkMode: false,
+      buttonContent: 'MSW',
+      panelWidth: 360,
+      panelHeight: 450,
+    })
     return () => {
-      if (mswController?.destroy) {
-        mswController.destroy()
-        console.log('🧹 SDK 资源已清理')
-      }
+      mswController.destroy()
     }
   }, [])
 
   return (
     <div className="app">
-      {/* 你的应用内容 */}
       <h1>我的应用</h1>
-      {/* MSW Controller 悬浮面板会自动显示在右下角 */}
     </div>
   )
 }
@@ -197,250 +132,108 @@ function App() {
 export default App
 ```
 
-## 📦 技术栈分层
+## 📦 核心 API
 
-### 🔧 MSW (Mock Service Worker)
-- **角色**: 基础拦截引擎
-- **职责**: HTTP 请求拦截、Service Worker 管理
-- **核心 API**: `http.get()`, `http.post()`, `HttpResponse.json()`
-- **文件位置**: `src/mocks/handlers.ts`, `public/mockServiceWorker.js`
+### @msw-controller/core
 
-### ⚙️ @msw-controller/core
-- **角色**: 业务逻辑层
-- **职责**: 拦截器生命周期、处理器动态管理、请求日志记录
-- **核心 API**: 
-  - `createInterceptor()` - 创建拦截器
-  - `getControllerInstance()` - 获取控制器实例
-  - `enableHandler()` / `disableHandler()` - 动态控制
-- **集成位置**: `src/mocks/browser.ts`, `src/main.tsx`
+- `createInterceptor(handlers)` - 创建拦截器
+- `getControllerInstance()` - 获取控制器实例
+- `toggleHandler(id, enabled?)` - 动态控制处理器启用/禁用
 
-### 🎨 @msw-controller/sdk
-- **角色**: 用户界面层
-- **职责**: 可视化控制面板、用户交互、主题管理
-- **核心 API**:
-  - `initMSWController()` - 创建悬浮控制面板
-  - 配置选项: `initialPosition`, `darkMode`, `enableDragging`
-- **集成位置**: `src/App.tsx` 或其他 React 组件
+### @msw-controller/sdk
 
-## 🎯 核心能力
+- `renderMSWController(controller, config?)` - 创建控制面板
+- 配置选项: `initialPosition`, `darkMode`, `panelWidth`, `panelHeight`
 
-### 🔄 动态 Mock 管理
+## 🎯 动态控制
+
 ```typescript
-// 运行时启用/禁用特定处理器
 import { getControllerInstance } from '@msw-controller/core'
 
-// 获取控制器实例
 const controller = getControllerInstance()
 
-// 禁用用户相关 API
-controller.disableHandler('/api/users')
+// 禁用特定处理器
+controller.toggleHandler('GET-/api/users', false)
 
 // 重新启用
-controller.enableHandler('/api/users')
+controller.toggleHandler('GET-/api/users', true)
+
+// 切换状态
+controller.toggleHandler('GET-/api/users')
 ```
 
-### 📊 请求监控与调试
-- **实时日志**: 查看所有被拦截的 HTTP 请求
-- **响应详情**: 检查请求参数、响应数据、状态码
-- **性能分析**: 监控请求耗时和频率
-- **错误追踪**: 快速定位 Mock 配置问题
+## ⚡ 配置选项
 
-### 🎨 可视化控制界面
-- **悬浮面板**: 不侵入应用 UI 的控制入口
-- **拖拽定位**: 自由调整面板位置
-- **主题适配**: 支持明暗主题切换
-- **响应式设计**: 适配不同屏幕尺寸
-
-## ⚡ 高级配置
-
-### 环境隔离配置
+### 环境控制
 
 ```typescript
 // 仅在开发环境启用
 if (import.meta.env.DEV) {
-  await setupMSW()
+  await enableMocking()
 }
 
-// 或基于环境变量
-if (process.env.NODE_ENV === 'development') {
-  await setupMSW()
-}
-```
-
-### 条件性 Mock 启用
-
-```typescript
 // 基于 URL 参数控制
 const urlParams = new URLSearchParams(window.location.search)
-const enableMock = urlParams.get('mock') === 'true'
-
-if (enableMock) {
-  await setupMSW()
-}
-```
-
-### 自定义 SDK 主题
-
-```typescript
-initMSWController({
-  // 自定义主题色彩
-  theme: {
-    primary: '#667eea',
-    secondary: '#764ba2',
-    background: '#ffffff',
-    text: '#333333'
-  },
-  
-  // 自定义按钮样式
-  buttonStyle: {
-    borderRadius: '50%',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
-  }
-})
-```
-
-## 💡 最佳实践指南
-
-### 🚀 性能优化策略
-
-#### 1. 非阻塞初始化
-```typescript
-// ✅ 推荐：MSW 启动后再渲染
-enableMocking().then(() => {
-  root.render(<App />)
-})
-
-// ❌ 避免：阻塞式初始化
-async function startApp() {
-  await enableMocking()  // 可能阻塞渲染
-  root.render(<App />)
-}
-```
-
-#### 2. 动态导入优化
-```typescript
-// ✅ 推荐：动态导入，减少主包体积
-const { worker } = await import('./mocks/browser')
-
-// ❌ 避免：静态导入，增加主包体积
-import { worker } from './mocks/browser'
-```
-
-#### 3. 环境隔离
-```typescript
-// ✅ 推荐：仅开发环境启用
-if (import.meta.env.DEV) {
-  await setupMSW()
-}
-
-// ✅ 也可以：基于特定条件
-if (window.location.hostname === 'localhost') {
-  await setupMSW()
-}
-```
-
-### 🛡️ 错误处理策略
-
-#### 1. 优雅降级
-```typescript
-try {
+if (urlParams.get('mock') === 'true') {
   await enableMocking()
-  console.log('✅ Mock 功能已启用')
-} catch (error) {
-  console.warn('⚠️ Mock 功能不可用，使用真实 API')
-  // 应用继续正常运行
 }
 ```
 
-#### 2. 资源清理
+### SDK 配置
+
 ```typescript
-useEffect(() => {
-  const controller = initMSWController(config)
-  
-  // 重要：清理资源
-  return () => {
-    controller?.destroy()
-  }
-}, [])
-```
+import { getControllerInstance } from '@msw-controller/core'
+import { renderMSWController } from '@msw-controller/sdk'
 
-### 🔧 开发调试技巧
-
-#### 1. 日志监控
-```typescript
-// 启用详细日志
-import { getGlobalControllerInstance } from '@msw-controller/core'
-
-const controller = getGlobalControllerInstance()
-console.log('🔍 MSW Controller 状态:', {
-  handlersCount: controller.getHandlers().length,
-  isActive: controller.isActive,
-  requestsLogged: controller.getRequestHistory().length
+const controller = getControllerInstance()
+renderMSWController(controller, {
+  darkMode: true,
+  buttonContent: '🔧',
+  buttonClassName: 'custom-msw-button',
+  panelClassName: 'custom-msw-panel',
+  panelWidth: 400,
+  panelHeight: 500,
+  container: document.getElementById('msw-container')
 })
 ```
 
-#### 2. 网络面板检查
-- 打开开发者工具 → Network 面板
-- 查看请求是否显示 "(from service worker)"
-- 确认响应数据符合 Mock 定义
+### 调试技巧
 
-#### 3. 控制面板使用
-- 点击悬浮按钮打开控制面板
-- 在 "Handlers" 标签查看所有处理器状态
-- 在 "Requests" 标签监控实时请求日志
-- 使用搜索和过滤功能快速定位问题
+- 在开发者工具 Network 面板查看请求是否显示 "(from service worker)"
+- 使用控制面板的 "Handlers" 标签查看处理器状态
+- 使用 "Requests" 标签监控请求日志
 
-## 🚨 常见问题解决
+## 🚨 常见问题
 
-### Service Worker 相关
+### Service Worker 无法启动
 
-**问题**: MSW 无法启动，控制台报错 "Service Worker registration failed"
-
-**解决方案**:
-1. 确保 `public/mockServiceWorker.js` 文件存在
-2. 检查服务器是否正确提供静态文件
-3. 确认浏览器支持 Service Worker
+确保 `public/mockServiceWorker.js` 文件存在：
 
 ```bash
-# 重新生成 Service Worker 文件
 npx msw init public/ --save
 ```
 
 ### 请求未被拦截
 
-**问题**: API 请求没有被 Mock 处理
-
-**解决方案**:
-1. 检查 handler 路径是否与实际请求路径匹配
-2. 确认 MSW Controller 已成功启动
-3. 查看控制面板中 handler 是否被禁用
+检查路径匹配：
 
 ```typescript
-// 检查路径匹配
 http.get('/api/users', handler)     // ✅ 匹配 /api/users
-http.get('/api/users/', handler)    // ❌ 不匹配 /api/users
-http.get('/api/users/*', handler)   // ✅ 匹配 /api/users/1
+http.get('/api/users/', handler)    // ❌ 不匹配 /api/users（注意尾部斜杠）
+http.get('/api/users/:id', handler) // ✅ 匹配 /api/users/1
 ```
 
 ### 内存泄漏
 
-**问题**: 长时间使用后页面性能下降
-
-**解决方案**:
-1. 确保在组件卸载时调用 `destroy()`
-2. 避免重复初始化 SDK
-3. 定期清理请求历史记录
+确保清理资源：
 
 ```typescript
-// 正确的清理方式
 useEffect(() => {
-  const controller = initMSWController(config)
-  return () => controller?.destroy()  // 关键！
+  const controller = renderMSWController(config)
+  return () => controller?.destroy()
 }, [])
 ```
 
-## 📚 进阶学习
+---
 
-- [MSW 官方文档](https://mswjs.io/) - 深入了解 Mock Service Worker
-- [React 性能优化](https://react.dev/learn/render-and-commit) - 优化应用性能
-- [Service Worker API](https://developer.mozilla.org/en-US/docs/Web/API/Service_Worker_API) - 理解底层原理
+更多信息请参考 [MSW 官方文档](https://mswjs.io/)

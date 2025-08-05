@@ -1,6 +1,9 @@
+/**
+ * MSW Controller Core - Main exports
+ * Provides core functionality for managing MSW handlers and request interception
+ */
 export {
   createInterceptor,
-  getController,
   getControllerInstance,
   MSWController,
 } from './interceptor'

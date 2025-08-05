@@ -1,4 +1,5 @@
-import initMSWController, { type MSWControllerSDK } from '@msw-controller/sdk'
+import { getControllerInstance } from '@msw-controller/core'
+import { type MSWControllerSDK, renderMSWController } from '@msw-controller/sdk'
 import { useEffect, useState } from 'react'
 
 function App() {
@@ -9,10 +10,9 @@ function App() {
   useEffect(() => {
     let mswController: MSWControllerSDK | null = null
     try {
-      mswController = initMSWController({
-        // import { getControllerInstance } from '@msw-controller/core'
-        // 注意：CDN方式需要在这里传入 core 包的实例
-        // controller: getControllerInstance(),
+      const controller = getControllerInstance()
+      mswController = renderMSWController(controller, {
+        // 其他配置选项
       })
       console.log('✅ MSW Controller SDK 初始化成功')
     } catch (error) {
