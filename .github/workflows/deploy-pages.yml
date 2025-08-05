@@ -42,10 +42,29 @@ jobs:
       - name: Build packages
         run: pnpm build
         
+      - name: Initialize MSW
+        run: |
+          cd examples
+          npx msw init public --save
+          
       - name: Build examples
         run: |
           cd examples
           pnpm build:pages
+          
+      - name: Verify build output
+        run: |
+          cd examples
+          echo "Contents of dist directory:"
+          ls -la dist/
+          echo "Checking for mockServiceWorker.js:"
+          if [ -f "dist/mockServiceWorker.js" ]; then
+            echo "✓ mockServiceWorker.js found"
+            echo "File size: $(wc -c < dist/mockServiceWorker.js) bytes"
+          else
+            echo "✗ mockServiceWorker.js NOT found"
+            exit 1
+          fi
           
       - name: Setup Pages
         uses: actions/configure-pages@v4
