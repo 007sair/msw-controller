@@ -14,9 +14,11 @@ export default defineConfig({
 	},
 	build: {
 		outDir: "dist",
+		copyPublicDir: true,
 	},
 	// 优化依赖预构建
 	optimizeDeps: {
 		include: ["react", "react-dom"],
 	},
+	publicDir: "public",
 });
