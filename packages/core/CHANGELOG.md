@@ -1,5 +1,11 @@
 # @msw-controller/core
 
+## 1.0.3
+
+### Patch Changes
+
+- improve code documentation and type definitions
+
 ## 1.0.2
 
 ### Patch Changes

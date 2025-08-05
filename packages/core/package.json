@@ -1,6 +1,6 @@
 {
   "name": "@msw-controller/core",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Core interceptor and storage management for MSW Controller",
   "type": "module",
   "main": "dist/index.js",
