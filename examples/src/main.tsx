@@ -8,9 +8,6 @@ import './index.css'
  * 只在开发环境下启用，避免影响生产环境
  */
 async function enableMocking() {
-  if (!import.meta.env.DEV) {
-    return
-  }
   const { worker } = await import('./mocks/browser')
   return worker.start()
 }
