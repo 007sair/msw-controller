@@ -15,10 +15,9 @@ export function createFloatingButton(config: FloatingButtonConfig): HTMLElement 
   // Set base inline styles
   Object.assign(button.style, {
     position: 'fixed',
-    width: '60px',
-    height: '32px',
-    borderRadius: '6px',
+    borderRadius: '0.2em',
     cursor: 'pointer',
+    padding: '0.5em 1em',
     zIndex: '9999',
     display: 'flex',
     alignItems: 'center',

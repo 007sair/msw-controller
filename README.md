@@ -15,86 +15,84 @@
 
 - `@msw-controller/core` - 核心拦截器和存储管理
 - `@msw-controller/sdk` - 通用 JavaScript/TypeScript SDK，支持所有框架
+- `@msw-controller/chrome-extension` - Chrome DevTools 扩展，提供开发者工具面板
 
 ## 快速开始
 
-### 安装
+### 前提条件
+
+使用 MSW Controller 前，请确保：
+
+1. **熟悉 MSW 基础用法** - 建议先阅读 [MSW 官方文档](https://mswjs.io/docs/integrations/browser)
+2. **项目已安装 MSW** - 确保项目中已正确配置 Mock Service Worker
+
+### 核心集成
+
+只需要在现有的 MSW 配置中添加一行代码：
 
 ```bash
-npm install @msw-controller/core @msw-controller/sdk
+npm install @msw-controller/core
 ```
-
-### 基础用法
-
-使用 msw-controller 前建议先熟悉 MSW 的基本用法。可以参考 [MSW 官方文档 - 浏览器集成](https://mswjs.io/docs/integrations/browser)。
 
 ```diff
 // src/mocks/browser.ts
 import { setupWorker } from 'msw/browser'
 import { handlers } from './handlers'
-+ import { createInterceptor } from '@msw-controller/core' // 1. 导入核心拦截器
++ import { createInterceptor } from '@msw-controller/core'
  
 - export const worker = setupWorker(...handlers)
-+ export const worker = setupWorker(createInterceptor(...handlers)) // 2. 使用核心拦截器创建 worker
++ export const worker = setupWorker(createInterceptor(...handlers))
 ```
 
-```diff
-// src/App.tsx
-import { useEffect } from 'react';
-+ import { getControllerInstance } from '@msw-controller/core'
-+ import { renderMSWController } from '@msw-controller/sdk';
+就这么简单！现在你可以选择以下两种方式来控制 MSW handlers：
+
+### 方式一：Chrome 扩展（推荐）
+
+**零代码侵入**，直接在浏览器中控制：
+
+1. 安装 Chrome 扩展：`@msw-controller/chrome-extension`
+2. 打开 Chrome DevTools → MSW Controller 面板
+3. 实时控制 handlers 的启用/禁用状态
+
+详细安装指南：[Chrome 扩展安装指南](packages/chrome-extension/INSTALL_GUIDE.md)
+
+### 方式二：SDK 集成
+
+**代码级控制**，适合需要程序化管理的场景：
+
+```bash
+npm install @msw-controller/sdk
+```
+
+```javascript
+// 在你的应用中 (例如 App.tsx)
+import { getControllerInstance } from '@msw-controller/core'
+import { renderMSWController } from '@msw-controller/sdk'
+import { useEffect } from 'react'
 
 function App() {
+  // 初始化 MSW Controller SDK - 提供悬浮按钮和控制面板UI
+  useEffect(() => {
+    const controller = getControllerInstance()
+    const mswController = renderMSWController(controller, {
+       // 配置选项详见：packages/sdk/README.md
+     })
 
-+  useEffect(() => {
-+    const controller = getControllerInstance()
-+    const mswController = renderMSWController(controller, {
-+        // 自定义配置 
-+    });
-+    return () => {
-+      mswController.destroy();
-+    };
-+  }, []);
+    // 清理函数：组件卸载时销毁SDK实例
+    return () => {
+      mswController?.destroy()
+    }
+  }, [])
 
   return (
     <div className="App">
       {/* 你的应用内容 */}
     </div>
-  );
+  )
 }
-
-export default App
 ```
 
-## 开发
-
-### 环境要求
-
-- Node.js >= 16.0.0
-- pnpm >= 8.0.0
-
-### 本地开发
-
-```bash
-# 克隆项目
-git clone https://github.com/your-username/msw-controller.git
-cd msw-controller
-
-# 安装依赖
-pnpm install
-
-# 构建所有包
-pnpm build
-
-# 开发模式
-pnpm dev
-
-# 运行测试
-pnpm test
-
-# 代码检查
-pnpm lint
-```
+完整示例请参考：[examples/src/App.tsx](examples/src/App.tsx)
 
 ## 贡献
 
@@ -102,7 +100,7 @@ pnpm lint
 
 ## 许可证
 
-MIT License - 查看 [LICENSE](LICENSE) 文件了解详情。
+MIT
 
 ## 相关链接
 
