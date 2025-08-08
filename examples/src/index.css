@@ -29,7 +29,20 @@ body {
 .header {
   text-align: center;
   color: white;
-  margin-bottom: 40px;
+  margin-bottom: 20px;
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.header-text {
+  flex: 1;
+  min-width: 300px;
 }
 
 .header h1 {
@@ -40,6 +53,24 @@ body {
 .header p {
   font-size: 1.2rem;
   opacity: 0.9;
+}
+
+.github-link svg {
+  width: 20px;
+  height: 20px;
+  vertical-align: -0.2em;
+  margin-right: 0.25em;
+}
+
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .header-text {
+    min-width: auto;
+  }
 }
 
 .demo-section {

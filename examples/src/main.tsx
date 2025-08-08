@@ -11,13 +11,16 @@ async function enableMocking() {
   // 在开发环境或 GitHub Pages 演示环境下启用 MSW
   if (import.meta.env.DEV || window.location.hostname.includes('github.io')) {
     const { worker } = await import('./mocks/browser')
-    
+
     // 为 GitHub Pages 环境配置正确的 Service Worker 路径
     const startOptions = window.location.hostname.includes('github.io')
       ? { serviceWorker: { url: '/msw-controller/mockServiceWorker.js' } }
       : {}
-    
-    return worker.start(startOptions)
+
+    // 启动 MSW worker
+    await worker.start(startOptions)
+
+    return
   }
 }
 

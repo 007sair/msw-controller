@@ -1,4 +1,4 @@
-import type { MSWController } from '@msw-controller/core'
+import type { HandlerConfig, MSWController } from '@msw-controller/core'
 import { createControlPanel } from './components/ControlPanelJS'
 import { createFloatingButton } from './components/FloatingButtonJS'
 import type { MSWControllerConfig, Position } from './types'
@@ -15,6 +15,7 @@ export class MSWControllerSDK {
   private panelElement: HTMLElement | null = null
   private buttonPosition: Position
   private container: HTMLElement
+  private resizeHandler: (() => void) | null = null
 
   /**
    * Create MSW Controller SDK instance
@@ -61,6 +62,7 @@ export class MSWControllerSDK {
    */
   private init(): void {
     this.createButton()
+    this.setupResizeHandler()
 
     const savedLayout = this.loadPanelLayout()
     const shouldOpen = savedLayout.isVisible === true
@@ -109,6 +111,64 @@ export class MSWControllerSDK {
 
     if (this.panelElement) {
       this.container.appendChild(this.panelElement)
+    }
+  }
+
+  /**
+   * Setup window resize handler to adjust panel position
+   */
+  private setupResizeHandler(): void {
+    this.resizeHandler = () => {
+      if (this.panelElement && this.isOpen) {
+        this.adjustPanelPosition()
+      }
+    }
+    window.addEventListener('resize', this.resizeHandler)
+  }
+
+  /**
+   * Adjust panel position to ensure it stays within viewport
+   */
+  private adjustPanelPosition(): void {
+    if (!this.panelElement) return
+
+    const panelRect = this.panelElement.getBoundingClientRect()
+    const viewportWidth = window.innerWidth
+    const viewportHeight = window.innerHeight
+    
+    let newX = panelRect.left
+    let newY = panelRect.top
+    let needsAdjustment = false
+
+    // Check if panel is outside viewport bounds
+    if (panelRect.right > viewportWidth) {
+      newX = viewportWidth - panelRect.width - 20
+      needsAdjustment = true
+    }
+    if (panelRect.left < 0) {
+      newX = 20
+      needsAdjustment = true
+    }
+    if (panelRect.bottom > viewportHeight) {
+      newY = viewportHeight - panelRect.height - 20
+      needsAdjustment = true
+    }
+    if (panelRect.top < 0) {
+      newY = 20
+      needsAdjustment = true
+    }
+
+    // Apply position adjustment if needed
+    if (needsAdjustment) {
+      this.panelElement.style.left = `${Math.max(0, newX)}px`
+      this.panelElement.style.top = `${Math.max(0, newY)}px`
+      
+      // Save the new position
+      const currentSize = {
+        width: parseInt(this.panelElement.style.width) || this.config.panelWidth,
+        height: parseInt(this.panelElement.style.height) || this.config.panelHeight,
+      }
+      this.savePanelLayout({ x: newX, y: newY }, currentSize)
     }
   }
 
@@ -209,6 +269,12 @@ export class MSWControllerSDK {
     if (this.panelElement) {
       this.panelElement.remove()
       this.panelElement = null
+    }
+
+    // Clean up resize handler
+    if (this.resizeHandler) {
+      window.removeEventListener('resize', this.resizeHandler)
+      this.resizeHandler = null
     }
 
     this.isOpen = false
@@ -396,5 +462,53 @@ export class MSWControllerSDK {
       buttonPosition: this.buttonPosition,
       config: this.config,
     }
+  }
+
+  /**
+   * Get all registered handlers from the controller
+   * @returns Array of handler configurations
+   */
+  public getHandlers(): HandlerConfig[] {
+    return this.controller.getHandlers()
+  }
+
+  /**
+   * Get request records from the controller
+   * @returns Array of request records
+   */
+  public getRequestHistory() {
+    return this.controller.getRequestRecords()
+  }
+
+  /**
+   * Clear request records in the controller
+   */
+  public clearRequestHistory() {
+    this.controller.clearRequestRecords()
+  }
+
+  /**
+   * Toggle a specific handler
+   * @param id Handler ID
+   * @param enabled Whether to enable or disable the handler
+   */
+  public toggleHandler(id: string, enabled?: boolean) {
+    this.controller.toggleHandler(id, enabled)
+  }
+
+  /**
+   * Enable a specific handler
+   * @param id Handler ID
+   */
+  public async enableHandler(id: string): Promise<void> {
+    return this.controller.enableHandler(id)
+  }
+
+  /**
+   * Disable a specific handler
+   * @param id Handler ID
+   */
+  public async disableHandler(id: string): Promise<void> {
+    return this.controller.disableHandler(id)
   }
 }

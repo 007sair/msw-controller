@@ -105,6 +105,18 @@ export class MSWController {
     }
   }
 
+  enableHandler(id: string): void {
+    this.toggleHandler(id, true)
+  }
+
+  disableHandler(id: string): void {
+    this.toggleHandler(id, false)
+  }
+
+  updateHandlers(): HandlerConfig[] {
+    return this.getHandlers()
+  }
+
   getHandlers(): HandlerConfig[] {
     return Array.from(this.handlers.values())
   }
@@ -215,6 +227,12 @@ export function createInterceptor(
   // Ensure global controller exists
   if (!globalController) {
     globalController = new MSWController(config)
+
+    // Expose controller instance to window for browser extension access
+    if (typeof window !== 'undefined') {
+      ;(window as any).__MSW_CONTROLLER_INSTANCE__ = globalController
+      ;(window as any).mswController = globalController
+    }
   }
 
   // Register all handlers

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>MSW Controller Panel</title>
+    <link rel="stylesheet" href="panel.css" />
+  </head>
+  <body>
+    <div id="app">
+      <div class="tabs-container">
+        <div class="tabs">
+          <button class="tab-button active" data-tab="requests">
+            请求记录
+          </button>
+          <button class="tab-button" data-tab="handlers">
+            Handlers <span id="handlerCount">(0/0)</span>
+          </button>
+          <button class="tab-button" data-tab="settings">帮助</button>
+        </div>
+        <div class="status" id="status">
+          <span class="status-indicator" id="statusIndicator"></span>
+          <span id="statusText">检查中...</span>
+        </div>
+      </div>
+
+      <div class="tab-content">
+        <!-- Requests Tab -->
+        <div id="requests-tab" class="tab-pane active">
+          <div class="toolbar">
+            <input
+              type="text"
+              id="requestSearch"
+              placeholder="搜索请求..."
+              class="search-input"
+            />
+            <button id="clearRequests" class="btn btn-secondary">清空</button>
+          </div>
+
+          <div id="requestsList" class="requests-list">
+            <div class="empty-state">
+              <p>暂无请求记录</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Handlers Tab -->
+        <div id="handlers-tab" class="tab-pane">
+          <div class="toolbar">
+            <input
+              type="text"
+              id="handlerSearch"
+              placeholder="搜索处理器..."
+              class="search-input"
+            />
+            <div class="select-all-container">
+              <input type="checkbox" id="selectAllHandlers" />
+              <label for="selectAllHandlers">全选</label>
+            </div>
+          </div>
+
+          <div id="handlersList" class="handlers-list">
+            <div class="empty-state" id="handlersEmpty">
+              <p>检查中...</p>
+              <p class="hint">正在检测MSW Controller实例</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="settings-tab" class="tab-pane">
+          <div class="help-content">
+            <div class="help-section">
+              <h4>📋 请求记录</h4>
+              <p>页面发起的 HTTP 请求会自动记录，包括请求方法、URL 和时间戳。</p>
+              <p>• 点击请求记录可切换对应 Handler 的启用状态</p>
+              <p>• 绿色边框表示已匹配，灰色边框表示未匹配</p>
+            </div>
+            
+            <div class="help-section">
+              <h4>⚙️ Handlers</h4>
+              <p>MSW 中定义的请求处理器，用于拦截和模拟 API 响应。</p>
+              <p>• 启用的 Handler 会拦截匹配的请求并返回模拟数据</p>
+              <p>• 禁用的 Handler 不会拦截请求，让请求发送到真实服务器</p>
+            </div>
+            
+            <div class="help-section">
+              <h4>💡 使用技巧</h4>
+              <p>• 使用搜索功能快速找到特定的 Handler 或请求</p>
+              <p>• 通过启用/禁用 Handler 来测试不同的数据场景</p>
+              <p>• 利用实时更新功能监控页面的网络活动</p>
+            </div>
+            
+            <div class="help-section">
+              <h4>🔗 项目信息</h4>
+              <p><a href="https://github.com/your-username/msw-controller" target="_blank">GitHub 仓库</a> | 如有问题或建议，欢迎提交 Issue</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="panel.js"></script>
+  </body>
+</html>

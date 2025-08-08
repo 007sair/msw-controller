@@ -1,0 +1,21 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="128" height="128" rx="20" fill="#007bff"/>
+  
+  <!-- Simple network icon -->
+  <circle cx="40" cy="64" r="12" fill="white"/>
+  <circle cx="88" cy="64" r="12" fill="white"/>
+  <path d="M52 64L76 64" stroke="white" stroke-width="6"/>
+  
+  <!-- Control indicator -->
+  <rect x="52" y="32" width="24" height="12" rx="6" fill="#ffd700"/>
+  <circle cx="58" cy="38" r="3" fill="#007bff"/>
+  <circle cx="64" cy="38" r="3" fill="#007bff"/>
+  <circle cx="70" cy="38" r="3" fill="#007bff"/>
+  
+  <!-- MSW Controller label -->
+  <text x="64" y="105" text-anchor="middle" fill="white" font-size="14" font-family="Arial, sans-serif" font-weight="bold">MSW Controller</text>
+  
+  <!-- Simple border frame -->
+  <rect x="8" y="8" width="112" height="112" rx="16" fill="none" stroke="white" stroke-width="1" opacity="0.3"/>
+</svg>

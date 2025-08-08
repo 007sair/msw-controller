@@ -1,0 +1,15 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="48" height="48" rx="8" fill="#007bff"/>
+  
+  <!-- Simple network icon -->
+  <circle cx="15" cy="24" r="4" fill="white"/>
+  <circle cx="33" cy="24" r="4" fill="white"/>
+  <path d="M19 24L29 24" stroke="white" stroke-width="3"/>
+  
+  <!-- Control indicator -->
+  <rect x="20" y="12" width="8" height="4" rx="2" fill="#ffd700"/>
+  
+  <!-- MSW label -->
+  <text x="24" y="42" text-anchor="middle" fill="white" font-size="7" font-family="Arial, sans-serif" font-weight="bold">MSW</text>
+</svg>

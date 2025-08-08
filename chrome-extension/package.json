@@ -1,0 +1,21 @@
+{
+  "name": "msw-controller-chrome-extension",
+  "version": "1.0.0",
+  "description": "Chrome DevTools extension for MSW Controller",
+  "scripts": {
+    "build": "chmod +x build.sh && ./build.sh",
+    "dev": "echo 'Load the extension in Chrome DevTools'",
+    "package": "npm run build"
+  },
+  "keywords": [
+    "chrome-extension",
+    "devtools",
+    "msw",
+    "mock",
+    "service-worker"
+  ],
+  "author": "LongChan",
+  "license": "MIT",
+  "devDependencies": {},
+  "dependencies": {}
+}

@@ -9,6 +9,7 @@ export {
 } from './interceptor'
 
 export type {
+  HandlerConfig,
   MSWControllerConfig,
   RequestRecord,
 } from './types'

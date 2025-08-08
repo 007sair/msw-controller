@@ -44,7 +44,7 @@ interface RequestRecord {
 export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElement {
   const isDark = config.darkMode
 
-  let activeTab: 'requests' | 'config' | 'settings' = 'requests'
+  let activeTab: 'requests' | 'config' | 'help' = 'requests'
   let searchKeyword = ''
   let requests: RequestRecord[] = []
   let panelPosition = { x: 0, y: 0 }
@@ -215,8 +215,8 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
     tabContainer.style.borderBottom = '1px solid #374151'
   }
 
-  const tabs = ['请求记录', '配置', '设置']
-  const tabKeys: ('requests' | 'config' | 'settings')[] = ['requests', 'config', 'settings']
+  const tabs = ['请求记录', 'Handlers', '帮助']
+  const tabKeys: ('requests' | 'config' | 'help')[] = ['requests', 'config', 'help']
 
   // Function to get tab title with count
   const getTabTitle = (tabName: string, tabKey: string): string => {
@@ -356,10 +356,10 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
       selectAllContainer.style.display = 'flex'
       searchContainer.style.display = 'flex'
       renderConfigTab()
-    } else if (activeTab === 'settings') {
+    } else if (activeTab === 'help') {
       selectAllContainer.style.display = 'none'
       searchContainer.style.display = 'none'
-      renderSettingsTab()
+      renderHelpTab()
     }
   }
 
@@ -676,21 +676,121 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
     })
   }
 
-  const renderSettingsTab = () => {
-    const settingsContainer = document.createElement('div')
-    Object.assign(settingsContainer.style, {
+  const renderHelpTab = () => {
+    const helpContainer = document.createElement('div')
+    Object.assign(helpContainer.style, {
       display: 'flex',
       flexDirection: 'column',
-      gap: '16px',
+      gap: '20px',
+      fontSize: '14px',
+      lineHeight: '1.6',
     })
 
+    // 交互功能部分
+    const interactionSection = document.createElement('div')
+    Object.assign(interactionSection.style, {
+      padding: '16px',
+      background: isDark ? '#374151' : '#f8f9fa',
+      borderRadius: '8px',
+      border: `1px solid ${isDark ? '#4a5568' : '#e2e8f0'}`,
+    })
+
+    const interactionTitle = document.createElement('h4')
+    interactionTitle.textContent = '🎯 交互说明'
+    Object.assign(interactionTitle.style, {
+      margin: '0 0 12px 0',
+      fontSize: '16px',
+      fontWeight: '600',
+      color: isDark ? '#f9fafb' : '#333333',
+    })
+
+    const interactionList = document.createElement('ul')
+    Object.assign(interactionList.style, {
+      margin: '0',
+      paddingLeft: '0',
+      color: isDark ? '#f9fafb' : '#333333',
+      listStyleType: 'none',
+    })
+
+    const dragFeature = document.createElement('li')
+    dragFeature.innerHTML = '1.点击并拖拽面板标题栏可移动面板位置'
+    Object.assign(dragFeature.style, {
+      marginBottom: '8px',
+    })
+
+    const resizeFeature = document.createElement('li')
+    resizeFeature.innerHTML = '2.拖拽面板右下角的调整手柄可改变面板尺寸'
+    Object.assign(resizeFeature.style, {
+      marginBottom: '8px',
+    })
+
+    const autoAdjustFeature = document.createElement('li')
+    autoAdjustFeature.innerHTML =
+      '3.窗口大小改变时，面板会自动调整位置保持可见'
+    Object.assign(autoAdjustFeature.style, {
+      marginBottom: '8px',
+    })
+
+    const persistenceFeature = document.createElement('li')
+    persistenceFeature.innerHTML =
+      '4.面板的位置、大小和显示状态会自动保存到本地存储'
+    Object.assign(persistenceFeature.style, {
+      marginBottom: '8px',
+    })
+
+    const githubFeature = document.createElement('li')
+    githubFeature.innerHTML = '<strong>Github ：</strong>'
+    const githubLink = document.createElement('a')
+    githubLink.href = 'https://github.com/007sair/msw-controller'
+    githubLink.target = '_blank'
+    githubLink.rel = 'noopener noreferrer'
+    githubLink.textContent = 'msw-controller'
+    Object.assign(githubLink.style, {
+      color: '#1890ff',
+      textDecoration: 'none',
+    })
+    githubLink.addEventListener('mouseenter', () => {
+      githubLink.style.textDecoration = 'underline'
+    })
+    githubLink.addEventListener('mouseleave', () => {
+      githubLink.style.textDecoration = 'none'
+    })
+    githubFeature.appendChild(githubLink)
+
+    interactionList.appendChild(dragFeature)
+    interactionList.appendChild(resizeFeature)
+    interactionList.appendChild(autoAdjustFeature)
+    interactionList.appendChild(persistenceFeature)
+    interactionList.appendChild(githubFeature)
+    interactionSection.appendChild(interactionTitle)
+    interactionSection.appendChild(interactionList)
+
+    // 全局配置部分
+    const configSection = document.createElement('div')
+    Object.assign(configSection.style, {
+      padding: '16px',
+      background: isDark ? '#374151' : '#f8f9fa',
+      borderRadius: '8px',
+      border: `1px solid ${isDark ? '#4a5568' : '#e2e8f0'}`,
+    })
+
+    const configTitle = document.createElement('h4')
+    configTitle.textContent = '⚙️ 全局配置'
+    Object.assign(configTitle.style, {
+      margin: '0 0 16px 0',
+      fontSize: '16px',
+      fontWeight: '600',
+      color: isDark ? '#f9fafb' : '#333333',
+    })
+
+    // 暗色主题配置
     const themeToggle = document.createElement('div')
     Object.assign(themeToggle.style, {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
       padding: '12px 0',
-      borderBottom: `1px solid ${isDark ? '#374151' : '#f0f0f0'}`,
+      borderBottom: `1px solid ${isDark ? '#4a5568' : '#e2e8f0'}`,
     })
 
     const themeLabel = document.createElement('span')
@@ -702,7 +802,6 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
 
     const themeCheckbox = document.createElement('input')
     themeCheckbox.type = 'checkbox'
-
     const savedTheme = config.sdkInstance?.loadThemePreference()
     themeCheckbox.checked = savedTheme !== undefined ? savedTheme : isDark || false
     Object.assign(themeCheckbox.style, {
@@ -710,7 +809,6 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
     })
 
     themeCheckbox.addEventListener('change', () => {
-      // Save theme preference using SDK
       if (config.sdkInstance?.saveThemePreference) {
         config.sdkInstance.saveThemePreference(themeCheckbox.checked)
         alert('主题设置已保存，请刷新页面以应用新主题')
@@ -722,14 +820,13 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
     themeToggle.appendChild(themeLabel)
     themeToggle.appendChild(themeCheckbox)
 
-    // Storage management section
+    // 清除存储配置
     const storageSection = document.createElement('div')
     Object.assign(storageSection.style, {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'space-between',
       padding: '12px 0',
-      borderBottom: `1px solid ${isDark ? '#374151' : '#f0f0f0'}`,
     })
 
     const storageLabel = document.createElement('span')
@@ -754,7 +851,6 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
 
     clearButton.addEventListener('click', () => {
       if (confirm('确定要清除所有MSW Controller相关的本地存储吗？这将重置所有设置和配置。')) {
-        // Clear MSW Controller related localStorage items
         const keysToRemove = []
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i)
@@ -778,85 +874,15 @@ export function createControlPanel(config: ControlPanelConfig): ExtendedHTMLElem
     storageSection.appendChild(storageLabel)
     storageSection.appendChild(clearButton)
 
-    const panelSection = document.createElement('div')
-    Object.assign(panelSection.style, {
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      padding: '12px 0',
-    })
+    configSection.appendChild(configTitle)
+    configSection.appendChild(themeToggle)
+    configSection.appendChild(storageSection)
 
-    const panelLabel = document.createElement('span')
-    panelLabel.textContent = '重置面板'
-    Object.assign(panelLabel.style, {
-      fontSize: '14px',
-      color: isDark ? '#f9fafb' : '#333333',
-    })
+    // 组装所有部分
+    helpContainer.appendChild(interactionSection)
+    helpContainer.appendChild(configSection)
 
-    const resetButtonContainer = document.createElement('div')
-    Object.assign(resetButtonContainer.style, {
-      display: 'flex',
-      gap: '8px',
-    })
-
-    const resetPositionButton = document.createElement('button')
-    resetPositionButton.textContent = '位置'
-    Object.assign(resetPositionButton.style, {
-      padding: '6px 12px',
-      border: `1px solid ${isDark ? '#374151' : '#d9d9d9'}`,
-      borderRadius: '4px',
-      background: isDark ? '#374151' : '#ffffff',
-      color: isDark ? '#f9fafb' : '#333333',
-      cursor: 'pointer',
-      fontSize: '12px',
-    })
-
-    resetPositionButton.addEventListener('click', () => {
-      if (config.sdkInstance?.resetPanelLayout) {
-        config.sdkInstance.resetPanelLayout()
-        alert('面板位置和大小已重置，请刷新页面以应用更改')
-      } else {
-        alert('无法重置面板位置：SDK实例不可用')
-      }
-    })
-
-    const resetSizeButton = document.createElement('button')
-    resetSizeButton.textContent = '大小'
-    Object.assign(resetSizeButton.style, {
-      padding: '6px 12px',
-      border: `1px solid ${isDark ? '#374151' : '#d9d9d9'}`,
-      borderRadius: '4px',
-      background: isDark ? '#374151' : '#ffffff',
-      color: isDark ? '#f9fafb' : '#333333',
-      cursor: 'pointer',
-      fontSize: '12px',
-    })
-
-    resetSizeButton.addEventListener('click', () => {
-      panel.style.width = '400px'
-      panel.style.height = '500px'
-      config.width = 400
-      config.height = 500
-      if (config?.sdkInstance?.savePanelLayout) {
-        config.sdkInstance.savePanelLayout(panelPosition, {
-          width: 400,
-          height: 500,
-        })
-      }
-      alert('面板大小已重置')
-    })
-
-    resetButtonContainer.appendChild(resetPositionButton)
-    resetButtonContainer.appendChild(resetSizeButton)
-    panelSection.appendChild(panelLabel)
-    panelSection.appendChild(resetButtonContainer)
-
-    // Assemble all sections
-    settingsContainer.appendChild(themeToggle)
-    settingsContainer.appendChild(storageSection)
-    settingsContainer.appendChild(panelSection)
-
-    tabContent.appendChild(settingsContainer)
+    tabContent.appendChild(helpContainer)
   }
 
   // Helper function to get method color

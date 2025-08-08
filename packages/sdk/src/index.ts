@@ -1,4 +1,5 @@
 import type { MSWController } from '@msw-controller/core'
+import { createControlPanel } from './components/ControlPanelJS'
 import { MSWControllerSDK } from './MSWControllerSDK'
 import type { MSWControllerConfig } from './types'
 
@@ -17,7 +18,7 @@ export function renderMSWController(
 }
 
 export type { MSWControllerConfig, Position } from './types'
-export { MSWControllerSDK }
+export { MSWControllerSDK, createControlPanel }
 export type { MSWController } from '@msw-controller/core'
 
 export default renderMSWController

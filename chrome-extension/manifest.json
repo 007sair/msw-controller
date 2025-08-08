@@ -1,0 +1,27 @@
+{
+  "manifest_version": 3,
+  "name": "MSW Controller DevTools",
+  "version": "1.0.0",
+  "description": "Chrome DevTools extension for MSW Controller - manage and monitor MSW handlers",
+  "minimum_chrome_version": "88",
+  "devtools_page": "devtools.html",
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "icons": {
+    "16": "icons/icon16.svg",
+    "32": "icons/icon32.svg",
+    "48": "icons/icon48.svg",
+    "128": "icons/icon128.svg"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self'"
+  }
+}
