@@ -1,5 +1,11 @@
 # @msw-controller/core
 
+## 1.0.4
+
+### Patch Changes
+
+- add chrome devtools extension for msw controller
+
 ## 1.0.3
 
 ### Patch Changes

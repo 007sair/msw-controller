@@ -4,7 +4,7 @@
   "commit": false,
   "fixed": [],
   "linked": [
-    ["@msw-controller/core", "@msw-controller/sdk"]
+    ["@msw-controller/core", "@msw-controller/sdk", "@msw-controller/chrome-extension"]
   ],
   "access": "public",
   "baseBranch": "main",

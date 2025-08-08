@@ -1,6 +1,7 @@
 {
-  "name": "msw-controller-chrome-extension",
-  "version": "1.0.0",
+  "name": "@msw-controller/chrome-extension",
+  "version": "1.0.4",
+  "private": true,
   "description": "Chrome DevTools extension for MSW Controller",
   "scripts": {
     "build": "chmod +x build.sh && ./build.sh",
